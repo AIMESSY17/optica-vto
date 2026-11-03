@@ -6,6 +6,8 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { AJUSTE_PUENTE, CAMARA, ESCALA_LENTE, OCLUSOR, PATILLAS, PUENTE_BASE, RUTAS } from './constantes.js';
 import { abrirPatillas, prepararPatillas } from './patillas.js';
+import { prepararCristales } from './cristales.js';
+import { aplicarVariante, materialesDeVariantes, muestrasDeVariantes, prepararVariantes } from './variantes.js';
 
 export function crearEscena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -75,7 +77,8 @@ export function crearEscena(canvas) {
     },
 
     // Descarga y prepara un lente, sin ponerlo en la cara (sirve para precargar el anterior y el siguiente).
-    async cargarModelo(url) {
+    // `info` = su entrada del catálogo (tipo, cristal, variantes, recolorear).
+    async cargarModelo(url, info = {}) {
       const gltf = await cargador.loadAsync(url);
       const nuevo = gltf.scene;
       prepararPatillas(nuevo);
@@ -90,19 +93,27 @@ export function crearEscena(canvas) {
             m.transparent = true;
             m.opacity = Math.min(m.opacity ?? 1, 0.3);
           }
-          if (/^LENS_/i.test(m.name)) m.depthWrite = false;
         }
       });
+      prepararCristales(nuevo, info);
+      prepararVariantes(nuevo, info);
+      nuevo.userData.info = info;
       return nuevo;
     },
 
     // Prepara los shaders de un lente todavía no puesto, para que al elegirlo aparezca sin trabarse.
+    // También los colores del lente, así cambiar de color tampoco traba.
     async precompilarModelo(modelo) {
+      const muestras = new THREE.Group();
+      for (const m of muestrasDeVariantes(modelo, modelo.userData.info?.variantes)) muestras.add(m);
+      muestras.scale.setScalar(ESCALA_LENTE);
       await renderer.compileAsync(modelo, camara, escena);
+      if (muestras.children.length) await renderer.compileAsync(muestras, camara, escena);
     },
 
     // Pone en la cara un lente ya cargado. El anterior no se libera acá: lo maneja la caché del motor.
-    ponerLente(modelo) {
+    ponerLente(modelo, variante = null) {
+      aplicarVariante(modelo, variante);
       if (lente === modelo) return;
       if (lente) anclaLente.remove(lente);
       lente = modelo;
@@ -113,7 +124,11 @@ export function crearEscena(canvas) {
     liberarModelo(modelo) {
       if (modelo === lente) return; // nunca el que está puesto
       liberar(modelo);
+      for (const m of materialesDeVariantes(modelo)) m.dispose();
     },
+
+    // Cambia el color del lente puesto (T1.4).
+    ponerVariante(variante) { if (lente) aplicarVariante(lente, variante); },
 
     // Encuadre: el video se muestra con object-fit: cover, así que recortamos la vista 3D igual.
     encuadrar(enc) {
@@ -141,6 +156,7 @@ export function crearEscena(canvas) {
     render() { renderer.render(escena, camara); },
 
     liberar() {
+      if (lente) for (const m of materialesDeVariantes(lente)) m.dispose();
       liberar(escena);
       escena.environment?.dispose();
       matOculto.dispose();

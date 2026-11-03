@@ -10,7 +10,40 @@
       "peso_kb": 474,
       "ancho_total_mm": 142,
       "colores": [
-        "negro"
+        "negro brillo",
+        "carey",
+        "cristal"
+      ],
+      "variantes": [
+        {
+          "nombre": "Negro brillo",
+          "muestra": "#1E1E1E",
+          "frame": {
+            "color": "#0E0E0E",
+            "roughness": 0.25,
+            "metalness": 0
+          }
+        },
+        {
+          "nombre": "Carey",
+          "muestra": "#7A3E12",
+          "frame": {
+            "procedural": "carey",
+            "roughness": 0.3,
+            "metalness": 0
+          }
+        },
+        {
+          "nombre": "Cristal",
+          "muestra": "#E8E4DC",
+          "claro": true,
+          "frame": {
+            "color": "#DCD9D2",
+            "opacity": 0.4,
+            "roughness": 0.12,
+            "metalness": 0
+          }
+        }
       ],
       "precio": null,
       "nota": "Se quitaron los logos metálicos de marca de las patillas; cristal pasado a transparente.",
@@ -42,7 +75,24 @@
       "peso_kb": 987,
       "ancho_total_mm": 140,
       "colores": [
-        "negro"
+        "negro",
+        "carey"
+      ],
+      "variantes": [
+        {
+          "nombre": "Negro",
+          "muestra": "#1E1E1E",
+          "original": true
+        },
+        {
+          "nombre": "Carey",
+          "muestra": "#7A3E12",
+          "frame": {
+            "procedural": "carey",
+            "roughness": 0.3,
+            "metalness": 0
+          }
+        }
       ],
       "precio": null,
       "nota": "Sin cristales en el modelo (el probador puede agregar un plano transparente).",
@@ -74,7 +124,36 @@
       "peso_kb": 697,
       "ancho_total_mm": 140,
       "colores": [
-        "carey"
+        "negro brillo",
+        "carey",
+        "cristal"
+      ],
+      "variantes": [
+        {
+          "nombre": "Negro brillo",
+          "muestra": "#1E1E1E",
+          "frame": {
+            "color": "#0E0E0E",
+            "roughness": 0.25,
+            "metalness": 0
+          }
+        },
+        {
+          "nombre": "Carey",
+          "muestra": "#7A3E12",
+          "original": true
+        },
+        {
+          "nombre": "Cristal",
+          "muestra": "#E8E4DC",
+          "claro": true,
+          "frame": {
+            "color": "#DCD9D2",
+            "opacity": 0.4,
+            "roughness": 0.12,
+            "metalness": 0
+          }
+        }
       ],
       "precio": null,
       "nota": "Originalmente de sol: cristales pasados a transparentes. Se puede volver a sol recoloreando LENS_*.",
@@ -106,7 +185,40 @@
       "peso_kb": 749,
       "ancho_total_mm": 134,
       "colores": [
-        "negro"
+        "negro brillo",
+        "carey",
+        "cristal"
+      ],
+      "variantes": [
+        {
+          "nombre": "Negro brillo",
+          "muestra": "#1E1E1E",
+          "frame": {
+            "color": "#0E0E0E",
+            "roughness": 0.25,
+            "metalness": 0
+          }
+        },
+        {
+          "nombre": "Carey",
+          "muestra": "#7A3E12",
+          "frame": {
+            "procedural": "carey",
+            "roughness": 0.3,
+            "metalness": 0
+          }
+        },
+        {
+          "nombre": "Cristal",
+          "muestra": "#E8E4DC",
+          "claro": true,
+          "frame": {
+            "color": "#DCD9D2",
+            "opacity": 0.4,
+            "roughness": 0.12,
+            "metalness": 0
+          }
+        }
       ],
       "precio": null,
       "nota": "Venía de costado: rotado.",
@@ -138,7 +250,35 @@
       "peso_kb": 401,
       "ancho_total_mm": 134,
       "colores": [
-        "dorado"
+        "dorado",
+        "plateado",
+        "negro"
+      ],
+      "variantes": [
+        {
+          "nombre": "Dorado",
+          "muestra": "#C9A55A",
+          "original": true
+        },
+        {
+          "nombre": "Plateado",
+          "muestra": "#CFCFCF",
+          "claro": true,
+          "frame": {
+            "color": "#D6D6D6",
+            "metalness": 1,
+            "roughness": 0.18
+          }
+        },
+        {
+          "nombre": "Negro",
+          "muestra": "#1E1E1E",
+          "frame": {
+            "color": "#1A1A1A",
+            "metalness": 0.6,
+            "roughness": 0.35
+          }
+        }
       ],
       "precio": null,
       "nota": "Se quitó el logo de marca impreso en el cristal. En la página NO usar el nombre de la marca original.",
@@ -170,7 +310,35 @@
       "peso_kb": 418,
       "ancho_total_mm": 136,
       "colores": [
+        "dorado",
+        "plateado",
         "negro"
+      ],
+      "variantes": [
+        {
+          "nombre": "Dorado",
+          "muestra": "#C9A55A",
+          "frame": {
+            "color": "#D9B56C",
+            "metalness": 1,
+            "roughness": 0.22
+          }
+        },
+        {
+          "nombre": "Plateado",
+          "muestra": "#CFCFCF",
+          "claro": true,
+          "frame": {
+            "color": "#D6D6D6",
+            "metalness": 1,
+            "roughness": 0.18
+          }
+        },
+        {
+          "nombre": "Negro",
+          "muestra": "#1E1E1E",
+          "original": true
+        }
       ],
       "precio": null,
       "nota": "",
@@ -202,8 +370,43 @@
       "peso_kb": 350,
       "ancho_total_mm": 142,
       "colores": [
-        "dorado"
+        "dorado",
+        "plateado",
+        "negro"
       ],
+      "variantes": [
+        {
+          "nombre": "Dorado",
+          "muestra": "#C9A55A",
+          "original": true
+        },
+        {
+          "nombre": "Plateado",
+          "muestra": "#CFCFCF",
+          "claro": true,
+          "frame": {
+            "color": "#D6D6D6",
+            "metalness": 1,
+            "roughness": 0.18
+          }
+        },
+        {
+          "nombre": "Negro",
+          "muestra": "#1E1E1E",
+          "frame": {
+            "color": "#1A1A1A",
+            "metalness": 0.6,
+            "roughness": 0.35
+          }
+        }
+      ],
+      "recolorear": [
+        "FRAME_0",
+        "FRAME_3"
+      ],
+      "cristal": {
+        "tinte": "#2F3229"
+      },
       "precio": null,
       "nota": "",
       "credito": {
@@ -234,8 +437,46 @@
       "peso_kb": 469,
       "ancho_total_mm": 138,
       "colores": [
-        "negro mate"
+        "dorado",
+        "plateado",
+        "negro"
       ],
+      "variantes": [
+        {
+          "nombre": "Dorado",
+          "muestra": "#C9A55A",
+          "frame": {
+            "color": "#D9B56C",
+            "metalness": 1,
+            "roughness": 0.22
+          }
+        },
+        {
+          "nombre": "Plateado",
+          "muestra": "#CFCFCF",
+          "claro": true,
+          "frame": {
+            "color": "#D6D6D6",
+            "metalness": 1,
+            "roughness": 0.18
+          }
+        },
+        {
+          "nombre": "Negro",
+          "muestra": "#1E1E1E",
+          "original": true
+        }
+      ],
+      "recolorear": [
+        "FRAME_0",
+        "FRAME_1",
+        "FRAME_2",
+        "FRAME_3",
+        "FRAME_4"
+      ],
+      "cristal": {
+        "tinte": "#1C1C1E"
+      },
       "precio": null,
       "nota": "Texturas reducidas de 80 MB a <0,5 MB.",
       "credito": {
@@ -266,5 +507,6 @@
       "licencia": "Apache-2.0",
       "fuente": "https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj"
     }
-  }
+  },
+  "_nota_variantes": "variantes: colores del marco (solo FRAME_*). original=true: como viene el modelo. procedural carey: textura generada en el probador. recolorear: qué FRAME_* se tocan (si falta, todos los opacos). cristal.tinte: color del cristal de sol."
 }

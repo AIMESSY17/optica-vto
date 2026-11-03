@@ -8,7 +8,8 @@ import { crearPuntos } from './puntos.js';
 import { FiltroPose } from './one-euro.js';
 import { MS_SIN_CARA_REINICIO, SUAVIZADO } from './constantes.js';
 
-export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, aviso, urlLente, debug }) {
+// `lente` = { url, info, variante }: url del GLB, su entrada del catálogo y el color elegido.
+export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, aviso, lente, debug }) {
   const escena = crearEscena(lienzo3d);
   const puntos = crearPuntos(lienzo2d);
   const suavizado = { ...SUAVIZADO };
@@ -18,9 +19,9 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
   // Caché de lentes (R-06): url → promesa del modelo ya cargado y con los shaders listos.
   // Se queda con el lente puesto y sus vecinos del carrusel; el resto se libera.
   const cache = new Map();
-  const obtener = (url) => {
+  const obtener = ({ url, info }) => {
     if (!cache.has(url)) {
-      const p = escena.cargarModelo(url).then(async (m) => { await escena.precompilarModelo(m); return m; });
+      const p = escena.cargarModelo(url, info).then(async (m) => { await escena.precompilarModelo(m); return m; });
       p.catch(() => cache.delete(url)); // si falló, que se pueda reintentar
       cache.set(url, p);
     }
@@ -41,10 +42,10 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
     let primero;
     [detector, primero] = await Promise.all([
       crearDetector(),
-      Promise.all([escena.cargarOclusor(), obtener(urlLente)]).then(([, m]) => m),
+      Promise.all([escena.cargarOclusor(), obtener(lente)]).then(([, m]) => m),
     ]);
-    escena.ponerLente(primero);
-    urlActual = urlLente;
+    escena.ponerLente(primero, lente.variante);
+    urlActual = lente.url;
     await escena.precompilar();
   } catch (e) {
     detector?.cerrar();
@@ -143,20 +144,24 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
 
   return {
     // Cambia el lente sin cerrar la cámara. Devuelve false si mientras tanto se eligió otro o se cerró.
-    async cambiarLente(url, vecinos = []) {
+    // `vecinos` = lentes ({ url, info }) que conviene no liberar.
+    async cambiarLente(pedido, vecinos = []) {
       const mio = ++turno;
-      const modelo = await obtener(url);
+      const modelo = await obtener(pedido);
       if (!activo || mio !== turno) return false;
-      escena.ponerLente(modelo);
-      urlActual = url;
-      podar(vecinos);
+      escena.ponerLente(modelo, pedido.variante);
+      urlActual = pedido.url;
+      podar(vecinos.map((v) => v.url));
       return true;
     },
 
+    // Cambia el color del marco del lente puesto, en vivo (T1.4).
+    cambiarColor(variante) { escena.ponerVariante(variante); },
+
     // Descarga en segundo plano los lentes que probablemente se elijan después (anterior y siguiente).
-    precargar(urls) {
-      podar(urls);
-      for (const u of urls) obtener(u).catch((e) => console.warn('[vto] no se pudo precargar', u, e));
+    precargar(lentes) {
+      podar(lentes.map((l) => l.url));
+      for (const l of lentes) obtener(l).catch((e) => console.warn('[vto] no se pudo precargar', l.url, e));
     },
 
     estaCargado(url) { return cache.has(url); },

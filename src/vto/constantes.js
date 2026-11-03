@@ -23,6 +23,13 @@ export const OCLUSOR = { escala: { x: 1.0, y: 1, z: 1.04 }, corrimientoZ: 0 };
 // al giro completo `transicion` más atrás. xMinRelativo: los vértices más cerca del centro no se tocan (nariz, puente).
 export const PATILLAS = { aperturaGrados: 7, separacionMm: 0, bisagraZ: -0.012, transicion: 0.012, xMinRelativo: 0.5 };
 
+// Cristales (T1.3). Receta: alfa casi 0 + reflejo del ambiente sumado encima (topeBrillo: cuánto puede aclarar, 0–1). Sol: tinte con degradé (más oscuro arriba).
+// El tinte de cada lente de sol se puede pisar en el catálogo con "cristal": { "tinte": "#..." }.
+export const CRISTAL = {
+  colorReceta: '#F4F7FA', alfaReceta: 0.04, reflejo: 0.6, topeBrillo: 0.1,
+  tinteSol: '#2A2C26', solArriba: 0.9, solAbajo: 0.55,
+};
+
 // Suavizado One Euro (spec 02 §6). Rotación: la velocidad se mide en grados/s.
 export const SUAVIZADO = { activo: true, minCutoff: 1.0, beta: 0.37, dCutoff: 1.0 };
 

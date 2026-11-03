@@ -4,6 +4,7 @@
 //
 //   const vto = await abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug });
 //   vto.cambiarLente(id); vto.cambiarColor(variante); vto.sacarFoto(); vto.cerrar();
+//   onConsultar(lente, variante) recibe el lente y el color elegidos (para el mensaje de WhatsApp).
 import './probador.css';
 import { abrirCamara, cerrarCamara, ErrorCamara } from './camara.js';
 import { crearUi, rutaPublica } from './ui.js';
@@ -16,6 +17,10 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   if (!lentes?.length) throw new Error('El catálogo no tiene lentes');
   let indice = Math.max(0, lentes.findIndex((l) => l.id === idInicial || l.codigo === idInicial));
 
+  // Color elegido por lente (índice en `variantes`). Arranca en el que es como viene el modelo.
+  const colorElegido = lentes.map((l) => Math.max(0, (l.variantes ?? []).findIndex((v) => v.original)));
+  const varianteDe = (i) => lentes[i].variantes?.[colorElegido[i]] ?? null;
+
   let cerrado = false;
   let stream = null;
   let motor = null;
@@ -23,17 +28,19 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   const ui = crearUi(contenedor, {
     lentes,
     onElegir: (i) => api.cambiarLente(lentes[i].id),
+    onColor: (k) => api.cambiarColor(k),
     onCerrar: () => { api.cerrar(); onCerrar?.(); },
-    onConsultar: () => onConsultar?.(lentes[indice]),
+    onConsultar: () => onConsultar?.(lentes[indice], varianteDe(indice)),
   });
-  ui.marcar(indice, { suave: false });
+  const marcar = (opts) => { ui.marcar(indice, opts); ui.marcarColor(colorElegido[indice]); };
+  marcar({ suave: false });
   requestAnimationFrame(() => ui.marcar(indice, { suave: false })); // por si el contenedor recién se mostró
   ui.aviso('Abriendo la cámara…');
 
-  const urlDe = (i) => rutaPublica(lentes[i].archivo);
+  const pedidoDe = (i) => ({ url: rutaPublica(lentes[i].archivo), info: lentes[i], variante: varianteDe(i) });
   const vecinos = (i) => {
     const n = lentes.length;
-    return [...new Set([(i - 1 + n) % n, (i + 1) % n])].filter((k) => k !== i).map(urlDe);
+    return [...new Set([(i - 1 + n) % n, (i + 1) % n])].filter((k) => k !== i).map(pedidoDe);
   };
 
   const api = {
@@ -42,13 +49,12 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
       const i = lentes.findIndex((l) => l.id === id || l.codigo === id);
       if (i < 0 || cerrado) return;
       indice = i;
-      ui.marcar(i);
+      marcar();
       if (!motor) return; // todavía cargando: al terminar se pone el último elegido
-      const url = urlDe(i);
-      const precargado = motor.estaCargado(url);
-      if (!precargado) ui.cargando(i, true);
+      const pedido = pedidoDe(i);
+      if (!motor.estaCargado(pedido.url)) ui.cargando(i, true);
       try {
-        const puesto = await motor.cambiarLente(url, vecinos(i));
+        const puesto = await motor.cambiarLente(pedido, vecinos(i));
         if (puesto) motor.precargar(vecinos(i));
       } catch (e) {
         console.error('[vto] no se pudo cargar el lente', e);
@@ -58,8 +64,17 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
       }
     },
 
-    // T1.4
-    cambiarColor() { console.warn('[vto] cambiarColor llega en T1.4'); },
+    // Cambia el color del marco en vivo (R-07). `variante`: índice, nombre o el objeto del catálogo.
+    cambiarColor(variante) {
+      const lista = lentes[indice].variantes ?? [];
+      const k = typeof variante === 'number' ? variante
+        : lista.findIndex((v) => v === variante || v.nombre === variante || v.nombre === variante?.nombre);
+      if (k < 0 || k >= lista.length || cerrado) return;
+      colorElegido[indice] = k;
+      ui.marcarColor(k);
+      motor?.cambiarColor(lista[k]); // si todavía carga, se aplica al terminar (va en el pedido)
+    },
+
     // T1.5
     async sacarFoto() { console.warn('[vto] sacarFoto llega en T1.5'); return null; },
 
@@ -88,14 +103,14 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
     const inicial = indice;
     const m = await iniciarMotor({
       contenedor: ui.raiz, video: ui.video, lienzo3d: ui.lienzo3d, lienzo2d: ui.lienzo2d,
-      aviso: ui.aviso, urlLente: urlDe(inicial), debug,
+      aviso: ui.aviso, lente: pedidoDe(inicial), debug,
     });
     if (cerrado) { m.cerrar(); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
     motor = m;
     ui.aviso('');
-    // Si eligieron otro lente mientras cargaba, ponerlo ahora; si no, precargar los vecinos.
+    // Si eligieron otro lente o color mientras cargaba, ponerlo ahora; si no, precargar los vecinos.
     if (indice !== inicial) api.cambiarLente(lentes[indice].id);
-    else motor.precargar(vecinos(inicial));
+    else { motor.cambiarColor(varianteDe(indice)); motor.precargar(vecinos(inicial)); }
     return api;
   } catch (e) {
     api.cerrar();

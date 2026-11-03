@@ -1,4 +1,6 @@
 // Panel de ?debug=1 (T0.6, T1.0): FPS, mostrar/ocultar oclusor y puntos, sliders de AJUSTE_PUENTE, oclusor, patillas y suavizado.
+import { ajusteCristal } from './cristales.js';
+
 export function crearDebug(contenedor, { escena, suavizado, opciones }) {
   const panel = document.createElement('details');
   panel.className = 'debug';
@@ -42,6 +44,9 @@ export function crearDebug(contenedor, { escena, suavizado, opciones }) {
     { nombre: 'oclusor Z (cm)', obj: escena.forma, k: 'oclusorZ', min: -2, max: 1, paso: 0.05, alCambiar: escena.aplicarOclusor },
     { nombre: 'apertura patillas (°)', obj: escena.forma, k: 'aperturaPatillas', min: 0, max: 15, paso: 0.5, alCambiar: escena.aplicarPatillas },
     { nombre: 'separación patillas (mm)', obj: escena.forma, k: 'separacionPatillas', min: 0, max: 8, paso: 0.25, alCambiar: escena.aplicarPatillas },
+    { nombre: 'cristal receta (opacidad)', obj: ajusteCristal.alfaReceta, k: 'value', min: 0, max: 0.3, paso: 0.01 },
+    { nombre: 'reflejo cristal', obj: ajusteCristal.reflejo, k: 'value', min: 0, max: 3, paso: 0.1 },
+    { nombre: 'tope brillo cristal', obj: ajusteCristal.topeBrillo, k: 'value', min: 0, max: 0.4, paso: 0.01 },
     { nombre: 'minCutoff', obj: suavizado, k: 'minCutoff', min: 0.05, max: 5, paso: 0.05 },
     { nombre: 'beta', obj: suavizado, k: 'beta', min: 0, max: 0.5, paso: 0.005 },
   ];
@@ -64,6 +69,7 @@ export function crearDebug(contenedor, { escena, suavizado, opciones }) {
       AJUSTE_PUENTE: { x: r(escena.ajuste.x), y: r(escena.ajuste.y), z: r(escena.ajuste.z) },
       SUAVIZADO: { minCutoff: r(suavizado.minCutoff), beta: r(suavizado.beta) },
       OCLUSOR: { anchoX: r(escena.forma.oclusorAncho), corrimientoZ: r(escena.forma.oclusorZ) },
+      CRISTAL: { alfaReceta: r(ajusteCristal.alfaReceta.value), reflejo: r(ajusteCristal.reflejo.value), topeBrillo: r(ajusteCristal.topeBrillo.value) },
       PATILLAS: { aperturaGrados: r(escena.forma.aperturaPatillas), separacionMm: r(escena.forma.separacionPatillas) },
     });
     try { await navigator.clipboard.writeText(texto); alert('Copiado:\n' + texto); }

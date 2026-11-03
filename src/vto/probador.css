@@ -64,7 +64,22 @@
 .vto-mini.cargando img { animation: vto-latido 0.9s ease-in-out infinite alternate; }
 @keyframes vto-latido { to { opacity: 0.35; } }
 
-.vto-fila { display: flex; align-items: center; justify-content: flex-end; min-height: 28px; padding: 14px 16px 0; }
+.vto-fila { display: flex; align-items: center; gap: 12px; min-height: 32px; padding: 14px 16px 0; }
+.vto-privado { margin-left: auto; flex: 0 0 auto; }
+
+/* Colores (boceto): puntos de 28 px; el elegido con aro blanco + contorno negro fino */
+.vto-colores { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.vto-colores[hidden] { display: none; }
+.vto-colores-titulo { font-size: 13px; color: var(--gris); margin-right: 2px; }
+.vto-color {
+  flex: 0 0 28px; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 2px solid transparent;
+  background: var(--muestra); background-clip: padding-box; outline: 1.5px solid transparent; outline-offset: 0;
+  position: relative;
+}
+.vto-color.claro { box-shadow: inset 0 0 0 1px #CFCDC7; }
+.vto-color[aria-pressed="true"] { border-color: var(--fondo); outline-color: var(--tinta); }
+/* Área de toque de 44 px sin agrandar el punto */
+.vto-color::after { content: ''; position: absolute; inset: -8px; }
 .vto-privado { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 9px; color: var(--gris-claro); }
 
 .vto-botones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 16px 0; }

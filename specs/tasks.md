@@ -30,8 +30,8 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 - [x] T1.0 Patillas tapadas a los costados: oclusor con ancho 1.0 (achicarlo deja ver la cara interna de las patillas a través del cristal) + patillas giradas 7° hacia afuera desde la bisagra en los 8 lentes, con separación extra opcional en X. Sliders en `?debug=1`: "ancho oclusor" (0.95–1.05), "oclusor Z", "apertura patillas" (0–15°), "separación patillas (mm)"; todos en "copiar valores". Fijos: `AJUSTE_PUENTE = {x:0, y:-0.8, z:0.6}`, `SUAVIZADO = {minCutoff:1, beta:0.37}`. **Listo:** de frente no se ve nada de las patillas a través del cristal, y de perfil la patilla cercana se ve entera hasta la oreja (iPhone + PC).
 - [x] T1.1 Módulo `abrirProbador()` con import dinámico y la API de spec 02.
 - [x] T1.2 Carrusel de los 8 lentes con precarga anterior/siguiente (R-06).
-- [ ] T1.3 Materiales de cristal baratos para móvil; tintes de sol (S01, S02).
-- [ ] T1.4 Variantes de color por `FRAME_*` (R-07).
+- [x] T1.3 Materiales de cristal baratos para móvil; tintes de sol (S01, S02).
+- [x] T1.4 Variantes de color por `FRAME_*` (R-07).
 - [ ] T1.5 Foto con branding y Web Share (R-08).
 - [ ] T1.6 Plan B selfie (R-09).
 - [ ] T1.7 Degradación por FPS (spec 02 §8).

@@ -37,7 +37,8 @@ botonAbrir.addEventListener('click', async () => {
       idInicial: lenteInicial,
       debug,
       onCerrar: volver,
-      onConsultar: (lente) => alert(`Lo quiero: ${lente.codigo} ${lente.nombre}\n(en F3 abre WhatsApp)`),
+      onConsultar: (lente, color) =>
+        alert(`Lo quiero: ${lente.codigo} ${lente.nombre}${color ? ' · ' + color.nombre : ''}\n(en F3 abre WhatsApp)`),
     });
   } catch (e) {
     if (e.tipo === 'cerrado') return;
