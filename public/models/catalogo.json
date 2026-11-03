@@ -1,0 +1,270 @@
+{
+  "_nota": "GLB en metros. Origen = puente de la nariz (va al landmark 168 de MediaPipe), Y arriba, frente a +Z, patillas a -Z. Materiales LENS_* = cristales, FRAME_* = marco (recolorear por nombre). ancho_total_mm = escala aplicada al modelo. medidas/precio = los carga la óptica (null en la demo). Cargar con GLTFLoader + MeshoptDecoder.",
+  "lentes": [
+    {
+      "id": "optico-acetato-negro",
+      "nombre": "Acetato negro",
+      "tipo": "receta",
+      "familia": "cuadrado-grueso",
+      "archivo": "/models/ready/optico-acetato-negro.glb",
+      "peso_kb": 474,
+      "ancho_total_mm": 142,
+      "colores": [
+        "negro"
+      ],
+      "precio": null,
+      "nota": "Se quitaron los logos metálicos de marca de las patillas; cristal pasado a transparente.",
+      "credito": {
+        "titulo": "Eyeglasses black v5",
+        "autor": "Edoardo.Panichi",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/eyeglasses-black-v5-346d4892ad344aecb838767a9e66edec",
+        "modificado": true
+      },
+      "codigo": "L01",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-acetato-negro_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-acetato-negro_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "optico-rectangular-negro",
+      "nombre": "Rectangular negro",
+      "tipo": "receta",
+      "familia": "rectangular",
+      "archivo": "/models/ready/optico-rectangular-negro.glb",
+      "peso_kb": 987,
+      "ancho_total_mm": 140,
+      "colores": [
+        "negro"
+      ],
+      "precio": null,
+      "nota": "Sin cristales en el modelo (el probador puede agregar un plano transparente).",
+      "credito": {
+        "titulo": "Black rectangular eyeglasses",
+        "autor": "islem-rd",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/black-rectangular-eyeglasses-dd6b70d2f0c5492791f05469c3d385c4",
+        "modificado": true
+      },
+      "codigo": "L02",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-rectangular-negro_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-rectangular-negro_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "optico-cateye-carey",
+      "nombre": "Cat-eye carey",
+      "tipo": "receta",
+      "familia": "cat-eye",
+      "archivo": "/models/ready/optico-cateye-carey.glb",
+      "peso_kb": 697,
+      "ancho_total_mm": 140,
+      "colores": [
+        "carey"
+      ],
+      "precio": null,
+      "nota": "Originalmente de sol: cristales pasados a transparentes. Se puede volver a sol recoloreando LENS_*.",
+      "credito": {
+        "titulo": "Glasses (Rigel)",
+        "autor": "Agha.Najam",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/glasses-rigel-47d044c57dc64586a09c0b181c34c874",
+        "modificado": true
+      },
+      "codigo": "L03",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-cateye-carey_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-cateye-carey_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "optico-panto-negro",
+      "nombre": "Panto negro",
+      "tipo": "receta",
+      "familia": "redondo-panto",
+      "archivo": "/models/ready/optico-panto-negro.glb",
+      "peso_kb": 749,
+      "ancho_total_mm": 134,
+      "colores": [
+        "negro"
+      ],
+      "precio": null,
+      "nota": "Venía de costado: rotado.",
+      "credito": {
+        "titulo": "Eyewear (Specs)",
+        "autor": "rojencha",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/eyewear-specs-bb1a41bb9d4d412c985ba1492985e90f",
+        "modificado": true
+      },
+      "codigo": "L04",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-panto-negro_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-panto-negro_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "optico-redondo-dorado",
+      "nombre": "Redondo dorado",
+      "tipo": "receta",
+      "familia": "redondo-metal",
+      "archivo": "/models/ready/optico-redondo-dorado.glb",
+      "peso_kb": 401,
+      "ancho_total_mm": 134,
+      "colores": [
+        "dorado"
+      ],
+      "precio": null,
+      "nota": "Se quitó el logo de marca impreso en el cristal. En la página NO usar el nombre de la marca original.",
+      "credito": {
+        "titulo": "GLASSES - MOSCOT ZEV-TT SE",
+        "autor": "Viky",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/glasses-moscot-zev-tt-se-20e76258ad1542bcae86d2daa6c27c57",
+        "modificado": true
+      },
+      "codigo": "L05",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-redondo-dorado_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-redondo-dorado_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "optico-medio-aro-negro",
+      "nombre": "Medio aro negro",
+      "tipo": "receta",
+      "familia": "rectangular-medio-aro",
+      "archivo": "/models/ready/optico-medio-aro-negro.glb",
+      "peso_kb": 418,
+      "ancho_total_mm": 136,
+      "colores": [
+        "negro"
+      ],
+      "precio": null,
+      "nota": "",
+      "credito": {
+        "titulo": "Glasses 3D model",
+        "autor": "nattsol",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/glasses-3d-model-74c1d202ac0249e39823e379e2b065e9",
+        "modificado": true
+      },
+      "codigo": "L06",
+      "miniaturas": {
+        "frente": "/models/thumbs/optico-medio-aro-negro_frente.webp",
+        "tres_cuartos": "/models/thumbs/optico-medio-aro-negro_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "sol-aviador-dorado",
+      "nombre": "Aviador dorado",
+      "tipo": "sol",
+      "familia": "aviador",
+      "archivo": "/models/ready/sol-aviador-dorado.glb",
+      "peso_kb": 350,
+      "ancho_total_mm": 142,
+      "colores": [
+        "dorado"
+      ],
+      "precio": null,
+      "nota": "",
+      "credito": {
+        "titulo": "Aviator sunglasses",
+        "autor": "Kimppo",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/aviator-sunglasses-00d1cb5aa82745228a3b764c97f867de",
+        "modificado": true
+      },
+      "codigo": "S01",
+      "miniaturas": {
+        "frente": "/models/thumbs/sol-aviador-dorado_frente.webp",
+        "tres_cuartos": "/models/thumbs/sol-aviador-dorado_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    },
+    {
+      "id": "sol-redondo-steampunk",
+      "nombre": "Redondo steampunk",
+      "tipo": "sol",
+      "familia": "redondo",
+      "archivo": "/models/ready/sol-redondo-steampunk.glb",
+      "peso_kb": 469,
+      "ancho_total_mm": 138,
+      "colores": [
+        "negro mate"
+      ],
+      "precio": null,
+      "nota": "Texturas reducidas de 80 MB a <0,5 MB.",
+      "credito": {
+        "titulo": "Sunglasses (game ready)",
+        "autor": "JakOuNien",
+        "licencia": "CC-BY-4.0",
+        "fuente": "https://sketchfab.com/3d-models/sunglasses-game-ready-fda93c17ad044e2e8d97684b09f420ea",
+        "modificado": true
+      },
+      "codigo": "S02",
+      "miniaturas": {
+        "frente": "/models/thumbs/sol-redondo-steampunk_frente.webp",
+        "tres_cuartos": "/models/thumbs/sol-redondo-steampunk_34.webp"
+      },
+      "medidas": {
+        "calibre": null,
+        "puente": null,
+        "patilla": null,
+        "_nota": "las carga la óptica real (ej. 52□18 140)"
+      }
+    }
+  ],
+  "oclusor": {
+    "archivo": "/models/occluder/canonical_face_model.obj",
+    "uso": "Cara base de MediaPipe (468 vértices = 468 landmarks, en cm). Renderizar invisible (colorWrite=false, renderOrder antes que el lente) para tapar las patillas.",
+    "credito": {
+      "autor": "Google MediaPipe",
+      "licencia": "Apache-2.0",
+      "fuente": "https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj"
+    }
+  }
+}
