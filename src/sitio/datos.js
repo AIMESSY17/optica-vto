@@ -16,12 +16,21 @@ export async function cargarDatos(ruta) {
   if (URL_SB && CLAVE && !forzarLocal) {
     try {
       const datos = await desdeSupabase();
+      await completarUso(datos.lentes, ruta);
       return { ...datos, origen: 'supabase' };
     } catch (e) {
       console.warn('[datos] Supabase no respondió, uso los JSON locales:', e.message);
     }
   }
   return { ...(await desdeJson(ruta)), origen: 'local' };
+}
+
+// La tabla lentes de Supabase todavía no tiene la columna uso (Pantallas / Lectura, specs/tasks.md).
+// Mientras tanto se toma del JSON local por código; si tampoco está, queda vacío.
+async function completarUso(lentes, ruta) {
+  if (lentes.every((l) => Array.isArray(l.uso))) return;
+  const local = await fetch(ruta('models/catalogo.json')).then((r) => r.json()).catch(() => ({ lentes: [] }));
+  for (const l of lentes) l.uso ??= local.lentes.find((x) => x.codigo === l.codigo)?.uso ?? [];
 }
 
 async function desdeJson(ruta) {
@@ -68,6 +77,7 @@ function aLente(f) {
     codigo: f.codigo,
     nombre: f.nombre,
     tipo: f.tipo,
+    ...(Array.isArray(f.uso) ? { uso: f.uso } : {}),
     familia: f.familia,
     archivo: f.archivo,
     peso_kb: f.peso_kb,

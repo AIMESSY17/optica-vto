@@ -5,7 +5,7 @@
 //   node scripts/miniaturas.mjs                  → todos los lentes de public/models/catalogo.json
 //   node scripts/miniaturas.mjs L07 L08          → solo esos (código o id)
 //   node scripts/miniaturas.mjs --salida carpeta → guarda en otra carpeta (para comparar antes de pisar)
-//   node scripts/miniaturas.mjs L01 --grande     → solo el frente a 1600 px (Lxx_frente_1600.webp), para el hero en PC
+//   node scripts/miniaturas.mjs --grande         → frente y 3/4 a 1600 px (*_1600.webp): portada en PC, zoom y lookbook
 //
 // Necesita Playwright con Chromium (`npx playwright install chromium`, una sola vez) o Google Chrome instalado.
 import { createServer } from 'vite';
@@ -23,7 +23,7 @@ const pedidos = args.filter((a, i) => !a.startsWith('--') && (iSalida < 0 || i !
 const grande = args.includes('--grande');
 const ANCHO = { frente: 640, '34': 568 }; // ancho final en px (como las miniaturas originales)
 // --grande: render al doble y margen proporcional (10 px de 1600 ≈ 4 px de 648), así la cota del hero calza igual.
-const VISTAS_A_GENERAR = grande ? ['frente'] : ['frente', '34'];
+const VISTAS_A_GENERAR = ['frente', '34'];
 const MARGEN = grande ? 10 : 4;
 
 const catalogo = JSON.parse(readFileSync(path.join(raiz, 'public/models/catalogo.json'), 'utf8'));

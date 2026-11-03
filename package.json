@@ -11,7 +11,8 @@
     "normalizar": "node scripts/normalizar.mjs",
     "miniaturas": "node scripts/miniaturas.mjs",
     "tapar-textura": "node scripts/tapar-textura.mjs",
-    "seed": "node scripts/generar-seed.mjs"
+    "seed": "node scripts/generar-seed.mjs",
+    "fotos": "node scripts/fotos.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.0",

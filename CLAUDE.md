@@ -13,11 +13,12 @@ La demo se llama **FOCO** (óptica ficticia). Se usa para venderle la página a 
 ## Reglas fijas
 - **Mobile primero.** Se prueba siempre en celular real (Chrome Android + Safari iPhone).
 - **Fluidez antes que detalle.** Si un efecto baja los FPS o atrasa la carga, se recorta.
-- **Diseño liviano y aireado** (aprobado): fondo casi blanco, negro, grises, rojo SOLO en cotas/códigos. Nada pesado ni cargado, nada de bordó ni bloques negros. Ver `specs/05-diseno.md` y `docs/boceto/`. El nivel 2 visual (F3b, `specs/07-nivel-2.md`) suma excepciones acotadas, listadas en la 05.
-- **Three.js y MediaPipe se cargan SOLO al abrir el probador** (import dinámico). La página inicial no los descarga.
-  - **Única excepción (F3b, spec 07):** en PC (`matchMedia('(min-width: 1024px) and (pointer: fine)')`) Three.js puede cargarse en el hero y la ficha, con import dinámico **después del primer render** (`requestIdleCallback`); antes se ve la imagen. En celular, nunca. MediaPipe sigue solo en el probador.
+- **Diseño de la home: "FOCO Edición 01"** (`specs/08-edicion-01.md`, pedido del dueño): revista de moda, capítulos claro/oscuro con grano, tipografía gigante detrás del objeto, rojo en cotas/códigos. Manda sobre la 05 y la 07 en la home. Ficha, hojas y probador siguen la 05.
+- **Modelos 3D solo en probador, tarjetas del catálogo y ficha.** Nunca como imagen grande ni macro (ni el modelo ni sus renders). Las imágenes editoriales (portada, momento de color, lookbook) son **fotos** (`public/fotos/editorial/`, `npm run fotos`, spec 08).
+- **Three.js y MediaPipe se cargan SOLO al abrir el probador** (import dinámico). La home no los descarga, ni en celu ni en PC.
+  - **Única excepción (F3b, spec 07):** en PC (`matchMedia('(min-width: 1024px) and (pointer: fine)')`) Three.js puede cargarse en la ficha, con import dinámico **después del primer render** (`requestIdleCallback`); antes se ve la imagen. En celular, nunca. MediaPipe sigue solo en el probador.
 - **Privacidad:** la cámara nunca sube nada. Todo se procesa en el celular. Decirlo en la UI.
-- **Licencias:** modelos solo CC0/CC-BY con crédito en `CREDITOS.md` y en el pie. Nada de modelos de videojuegos ni logos/nombres de marcas reales.
+- **Licencias:** modelos solo CC0/CC-BY con crédito en `CREDITOS.md` y en el pie. Fotos con autor y link en `public/fotos/CREDITOS.md` (salen en el pie). Nada de modelos de videojuegos ni logos/nombres de marcas reales.
 - Todo gratis: Vite + JS vanilla, deploy en Vercel (repo GitHub AIMESSY17).
 
 ## Stack
@@ -42,4 +43,5 @@ node scripts/normalizar.mjs entrada.glb public/models/ready/x.glb --ancho 140 --
 node scripts/normalizar.mjs entrada.glb x --listar        # piezas numeradas (para --quitar-piezas 1,3: logos modelados)
 node scripts/tapar-textura.mjs entrada.glb salida.glb --material FRAME_0 --zona base:x,y,w,h:dx,dy   # tapar logos en texturas
 npm run miniaturas -- L07                                 # miniaturas frente y 3/4 (todas si no se pasa código)
+npm run fotos                                             # fotos editoriales → AVIF/WebP (después de poner o cambiar una)
 ```

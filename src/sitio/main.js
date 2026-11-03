@@ -9,7 +9,14 @@ const ruta = (r) => (/^https?:\/\//.test(r) ? r : base + String(r).replace(/^\//
 const $ = (sel, raiz = document) => raiz.querySelector(sel);
 const $$ = (sel, raiz = document) => [...raiz.querySelectorAll(sel)];
 const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MUESTRA_CATALOGO = 4; // tarjetas visibles antes de "Ver los modelos"
+const esPc = matchMedia('(min-width: 1024px) and (pointer: fine)');
+const dos = (n) => String(n).padStart(2, '0');
+// Versión de 1600 px de una miniatura (npm run miniaturas -- --grande). Si no existe, se vuelve a la chica.
+const grande = (r) => String(r).replace(/_(frente|34)\.webp$/, '_$1_1600.webp');
+const ponerGrande = (img, r) => {
+  img.addEventListener('error', () => { if (img.src !== ruta(r)) img.src = ruta(r); }, { once: true });
+  img.src = ruta(grande(r));
+};
 
 registrarCacheProbador();
 
@@ -34,25 +41,6 @@ const textos = () => {
   const m = sitio.marca;
   $('[data-texto="rotulo"]').textContent = `${m.rubro} · ${m.ciudad}`.toUpperCase();
   $('[data-texto="hero"]').textContent = sitio.hero.texto;
-  const heroLente = porCodigo(sitio.hero.lente);
-  if (heroLente) {
-    const img = $('[data-hero-img]');
-    const src = ruta(heroLente.miniaturas.frente);
-    if (!img.src.endsWith(heroLente.miniaturas.frente)) img.src = src;
-    img.alt = `Lente ${heroLente.nombre.toLowerCase()}, de frente`;
-    // PC: versión de 1600 px (npm run miniaturas -- Lxx --grande). Si no existe, queda la chica.
-    const grande = $('[data-hero-grande]');
-    const srcGrande = src.replace(/_frente\.webp$/, '_frente_1600.webp');
-    if (srcGrande === src) grande.remove();
-    else if (!grande.srcset.endsWith(srcGrande.split('/').pop())) {
-      grande.srcset = srcGrande;
-      img.addEventListener('error', () => { grande.remove(); img.src = src; }, { once: true });
-    }
-    $('[data-hero-medida]').textContent = `${heroLente.ancho_total_mm} MM`;
-    $('[data-hero-fig]').textContent = `FIG. 01 · ${heroLente.codigo} ${heroLente.nombre}`.toUpperCase();
-    const dos = (n) => String(n).padStart(2, '0');
-    $('[data-hero-indice]').textContent = `${dos(lentes.indexOf(heroLente) + 1)}/${dos(lentes.length)}`;
-  }
   $('[data-direccion]').textContent = sitio.direccion;
   $('[data-horarios]').innerHTML = '';
   sitio.horarios.forEach((h, i) => {
@@ -70,20 +58,23 @@ const textos = () => {
 };
 
 // ---------------------------------------------------------------------------------------------
-// Catálogo (R-20): Todos / Receta / Sol + forma + color, sin recargar
-const filtro = { tipo: '', forma: '', color: '', todos: false };
+// Catálogo (R-20) = lámina de análisis: Todos / Receta / Sol / Pantallas / Lectura + forma, sin recargar
+const filtro = { cat: '', forma: '' };
 const formaDe = (l) => Object.entries(sitio.formas).find(([, fams]) => fams.includes(l.familia))?.[0] ?? '';
 const nombresColor = (l) => (l.variantes ?? []).map((v) => v.nombre);
 const subtitulo = (l) => {
   const n = l.variantes?.length ?? 1;
   return `${l.tipo === 'sol' ? 'Sol' : 'Receta'} · ${n} ${n === 1 ? 'color' : 'colores'}`;
 };
+const enCategoria = (l, cat) => !cat || (cat === 'receta' || cat === 'sol' ? l.tipo === cat : (l.uso ?? []).includes(cat));
+const GARABATOS = ['estrella', 'flecha', 'circulo', 'subrayado', '4k', 'firma', 'estrella', 'circulo'];
 
+// Tarjeta chica (solo "Parecidos" dentro de la ficha)
 function tarjeta(l) {
   const a = document.createElement('a');
   a.className = 'tarjeta';
   a.href = `#lente/${l.codigo}`;
-  a.innerHTML = `<div class="tarjeta-foto"><img alt="" loading="lazy" decoding="async" width="640" height="260"><span class="codigo"></span></div>
+  a.innerHTML = `<div class="tarjeta-foto"><img alt="" loading="lazy" decoding="async" width="648" height="246"><span class="codigo"></span></div>
     <div><div class="tarjeta-nombre"></div><div class="tarjeta-sub"></div></div>`;
   $('img', a).src = ruta(l.miniaturas.frente);
   $('img', a).alt = l.nombre;
@@ -93,43 +84,95 @@ function tarjeta(l) {
   return a;
 }
 
+// Pieza de la lámina: corchetes rojos, LX/DX/F, cota con el ancho y un garabato
+function pieza(l) {
+  const i = lentes.indexOf(l);
+  const a = document.createElement('a');
+  a.className = 'pieza';
+  a.href = `#lente/${l.codigo}`;
+  a.innerHTML = `<div class="pieza-foto">
+      <span class="rotulo pieza-lx"></span><span class="rotulo pieza-dx"></span><span class="rotulo pieza-f"></span>
+      <div class="cota" aria-hidden="true"><span></span></div>
+      <img alt="" loading="lazy" decoding="async" width="648" height="246">
+      <span class="sombra" aria-hidden="true"></span>
+      <span class="rotulo pieza-codigo"></span>
+      <svg class="garabato" aria-hidden="true"><use href="#g-${GARABATOS[i % GARABATOS.length]}"/></svg>
+    </div>
+    <div class="pieza-pie"><div><div class="pieza-nombre"></div><div class="pieza-sub"></div></div><span class="rotulo"></span></div>`;
+  $('img', a).src = ruta(l.miniaturas.frente);
+  $('img', a).alt = l.nombre;
+  $('.pieza-lx', a).textContent = `LX${dos(i + 1)}`;
+  $('.pieza-dx', a).textContent = `DX E${dos(i + 1)}`;
+  $('.pieza-f', a).textContent = `F${dos(i)}`;
+  $('.cota span', a).textContent = `${l.ancho_total_mm}`;
+  $('.pieza-codigo', a).textContent = l.codigo;
+  $('.pieza-nombre', a).textContent = l.nombre;
+  $('.pieza-sub', a).textContent = subtitulo(l);
+  $('.pieza-pie .rotulo', a).textContent = `${l.ancho_total_mm} MM`;
+  return a;
+}
+
+// Tira técnica: contorno de cada lente (scripts/contornos.mjs) con su cota
+function armarTira() {
+  $('[data-tira]').replaceChildren(...lentes.map((l) => {
+    const a = document.createElement('a');
+    a.className = 'tira-item';
+    a.href = `#lente/${l.codigo}`;
+    a.innerHTML = '<img alt="" loading="lazy" decoding="async" width="400" height="152"><div class="cota" aria-hidden="true"><span></span></div><span class="rotulo"></span>';
+    const img = $('img', a);
+    img.src = ruta(`models/contornos/${l.id}.png`);
+    img.addEventListener('error', () => a.remove(), { once: true }); // lente nuevo sin contorno: no se muestra
+    $('.cota span', a).textContent = `${l.ancho_total_mm}`;
+    $('.rotulo', a).textContent = `${l.codigo} · ${l.nombre}`;
+    a.setAttribute('aria-label', `${l.nombre}, ${l.ancho_total_mm} mm de ancho`);
+    return a;
+  }));
+}
+
 function armarFiltros() {
   const forma = $('[data-forma]');
   for (const f of Object.keys(sitio.formas)) if (lentes.some((l) => formaDe(l) === f)) forma.append(new Option(f, f));
-  const color = $('[data-color]');
-  for (const c of [...new Set(lentes.flatMap(nombresColor))].sort((a, b) => a.localeCompare(b, 'es'))) color.append(new Option(c, c));
-
   $('[data-filtros]').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-tipo]');
+    const b = e.target.closest('[data-cat]');
     if (!b) return;
-    filtro.tipo = b.dataset.tipo;
+    filtro.cat = b.dataset.cat;
     pintarCatalogo();
   });
   forma.addEventListener('change', () => { filtro.forma = forma.value; pintarCatalogo(); });
-  color.addEventListener('change', () => { filtro.color = color.value; pintarCatalogo(); });
   $('[data-limpiar]').addEventListener('click', () => {
-    Object.assign(filtro, { tipo: '', forma: '', color: '' });
-    forma.value = ''; color.value = '';
+    Object.assign(filtro, { cat: '', forma: '' });
+    forma.value = '';
     pintarCatalogo();
   });
-  $('[data-ver-todos]').addEventListener('click', () => { filtro.todos = true; pintarCatalogo(); });
 }
 
 function pintarCatalogo() {
-  const hay = lentes.filter((l) => (!filtro.tipo || l.tipo === filtro.tipo)
-    && (!filtro.forma || formaDe(l) === filtro.forma)
-    && (!filtro.color || nombresColor(l).includes(filtro.color)));
-  const filtrando = filtro.tipo || filtro.forma || filtro.color;
-  const visibles = filtrando || filtro.todos ? hay : hay.slice(0, MUESTRA_CATALOGO);
-  $('[data-grilla]').replaceChildren(...visibles.map(tarjeta));
+  const hay = lentes.filter((l) => enCategoria(l, filtro.cat) && (!filtro.forma || formaDe(l) === filtro.forma));
+  $('[data-grilla]').replaceChildren(...hay.map(pieza));
+  $('[data-grilla]').scrollLeft = 0;
   $('[data-vacio]').hidden = hay.length > 0;
-  const ver = $('[data-ver-todos]');
-  ver.hidden = visibles.length >= hay.length;
-  ver.textContent = `Ver los ${hay.length} modelos`;
-  $('[data-cantidad]').textContent = `${String(hay.length).padStart(2, '0')} ${hay.length === 1 ? 'MODELO' : 'MODELOS'}`;
-  for (const b of $$('[data-tipo]')) b.setAttribute('aria-pressed', String(b.dataset.tipo === filtro.tipo));
+  $('[data-cantidad]').textContent = `${dos(hay.length)} ${hay.length === 1 ? 'MODELO' : 'MODELOS'}`;
+  for (const b of $$('[data-cat]')) b.setAttribute('aria-pressed', String(b.dataset.cat === filtro.cat));
   $('[data-forma]').closest('.chip').classList.toggle('activo', !!filtro.forma);
-  $('[data-color]').closest('.chip').classList.toggle('activo', !!filtro.color);
+}
+
+// Categorías: 4 tarjetas que filtran el catálogo
+function armarCategorias() {
+  const usados = new Set(); // cada tarjeta con un lente distinto, si se puede
+  for (const b of $$('[data-categoria]')) {
+    const cat = b.dataset.categoria;
+    const de = lentes.filter((l) => enCategoria(l, cat));
+    const foto = de.find((l) => !usados.has(l)) ?? de[0];
+    const img = $('[data-categoria-img]', b);
+    if (foto) { usados.add(foto); ponerGrande(img, foto.miniaturas.tres_cuartos); } else img.remove();
+    $('[data-categoria-cant]', b).textContent = `${dos(de.length)} ${de.length === 1 ? 'MODELO' : 'MODELOS'} →`;
+    b.addEventListener('click', () => {
+      Object.assign(filtro, { cat, forma: '' });
+      $('[data-forma]').value = '';
+      pintarCatalogo();
+      $('#catalogo').scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' });
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -343,62 +386,26 @@ async function abrirProbador(codigo = sitio.hero.lente, colorInicial) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Lupa "ver claro" (spec 04 §7): el dedo o el cursor es un lente que enfoca la tabla
-function armarLupa() {
-  const lupa = $('[data-lupa]');
-  const poner = (x, y) => { lupa.style.setProperty('--x', `${x}px`); lupa.style.setProperty('--y', `${y}px`); };
-  let tocada = false;
-  const mover = (e) => {
-    tocada = true;
-    const r = lupa.getBoundingClientRect();
-    poner(Math.min(Math.max(e.clientX - r.left, 0), r.width), Math.min(Math.max(e.clientY - r.top, 0), r.height));
-  };
-  lupa.addEventListener('pointermove', mover);
-  lupa.addEventListener('pointerdown', mover);
-  if (reducido) return;
-  // Mientras nadie la toca, la lupa pasea despacio (solo si está a la vista).
-  let visible = false, raf = 0;
-  const pasear = (t) => {
-    if (tocada || !visible) { raf = 0; return; }
-    const r = lupa.getBoundingClientRect();
-    poner(r.width * (0.5 + 0.22 * Math.sin(t / 2100)), r.height * (0.52 + 0.18 * Math.sin(t / 1300)));
-    raf = requestAnimationFrame(pasear);
-  };
-  new IntersectionObserver(([e]) => {
-    visible = e.isIntersecting;
-    if (visible && !raf && !tocada) raf = requestAnimationFrame(pasear);
-  }).observe(lupa);
-}
-
-// ---------------------------------------------------------------------------------------------
-// Movimiento sutil (spec 05): el lente del hero gira apenas con el scroll; las secciones aparecen al llegar
-function movimiento() {
-  // PC: el botón de WhatsApp se esconde mientras se ve el hero (ahí ya están los botones)
-  if ('IntersectionObserver' in window) {
-    const flotante = $('.flotante');
-    new IntersectionObserver(([e]) => {
-      flotante.classList.toggle('en-hero', e.isIntersecting && matchMedia('(min-width: 1024px)').matches);
-    }, { threshold: 0.35 }).observe($('.hero'));
-  }
-  if (reducido) return;
-  const img = $('[data-hero-img]');
-  let pendiente = false;
-  addEventListener('scroll', () => {
-    if (pendiente || scrollY > 700) return;
-    pendiente = true;
-    requestAnimationFrame(() => {
-      pendiente = false;
-      img.style.setProperty('--giro', `${Math.min(scrollY / 500, 1) * 16}deg`);
-    });
-  }, { passive: true });
-
+// Header con el tono del capítulo que tiene debajo, y WhatsApp flotante escondido en la portada (ahí están los botones).
+// El resto del movimiento es CSS atado al scroll (estilos.css).
+function tonos() {
   if (!('IntersectionObserver' in window)) return;
+  const cabecera = $('.cabecera');
+  const tono = (el) => (el.classList.contains('noche') ? 'noche' : el.classList.contains('rojo') ? 'rojo' : 'estudio');
+  const alto = cabecera.offsetHeight;
+  // Franja finita a la altura del medio del header: el capítulo que la cruza manda el tono
   const io = new IntersectionObserver((entradas) => {
-    for (const e of entradas) if (e.isIntersecting) { e.target.classList.add('visto'); io.unobserve(e.target); }
-  }, { rootMargin: '0px 0px -8% 0px' });
-  for (const s of $$('main > section:not(.hero), .pie')) {
-    if (s.getBoundingClientRect().top > innerHeight) { s.classList.add('revelar'); io.observe(s); }
-  }
+    const e = entradas.filter((x) => x.isIntersecting).pop();
+    if (!e) return;
+    cabecera.classList.remove('tono-estudio', 'tono-noche', 'tono-rojo');
+    cabecera.classList.add(`tono-${e.target.classList.contains('puente') ? 'estudio' : tono(e.target)}`);
+  }, { rootMargin: `-${Math.round(alto / 2)}px 0px -${Math.max(innerHeight - Math.round(alto / 2) - 1, 1)}px 0px` });
+  for (const c of $$('.cap')) io.observe(c);
+
+  const flotante = $('.flotante');
+  new IntersectionObserver(([e]) => {
+    flotante.classList.toggle('en-portada', e.isIntersecting);
+  }, { threshold: 0.35 }).observe($('.portada'));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -422,10 +429,11 @@ function armarCreditos() {
 textos();
 armarFiltros();
 pintarCatalogo();
+armarTira();
+armarCategorias();
 armarServicios();
 armarCreditos();
-armarLupa();
-movimiento();
+tonos();
 $('[data-faq]').replaceChildren(...sitio.faq.map((f, i) => {
   const d = document.createElement('details');
   d.open = i === 0;
@@ -439,6 +447,8 @@ document.addEventListener('click', (e) => {
   const turno = e.target.closest('[data-turno]');
   if (turno) { e.preventDefault(); abrirTurno(turno.dataset.turno || undefined); return; }
   if (e.target.closest('[data-probar]')) { abrirProbador(); return; }
+  const probarLente = e.target.closest('[data-probar-lente]');
+  if (probarLente) { abrirProbador(probarLente.dataset.probarLente); return; }
   if (e.target.closest('[data-creditos]')) { abrirHoja($('[data-hoja-creditos]')); return; }
   const aFicha = e.target.closest('a[href^="#lente/"]');
   if (aFicha && hojaAbierta === $('[data-ficha]')) {
@@ -465,3 +475,6 @@ if (location.hash.startsWith('#lente/')) fichaPorNavegacion = false; // entró d
 // El módulo del probador es liviano (sin three): se baja cuando la página ya cargó,
 // así al tocar "Probátelos" arranca en el mismo toque (iOS pide la cámara solo así).
 (window.requestIdleCallback ?? ((f) => setTimeout(f, 1200)))(() => cargarVto().catch(() => {}));
+
+// Solo PC con mouse: cursor propio y botones magnéticos. La home no carga three (los 3D van solo en probador, catálogo y ficha).
+if (esPc.matches) import('./pc.js').then((m) => m.iniciarPc({ reducido })).catch((e) => console.warn('[pc]', e));

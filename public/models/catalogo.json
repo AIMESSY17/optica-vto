@@ -1,10 +1,13 @@
 {
-  "_nota": "GLB en metros. Origen = puente de la nariz (va al landmark 168 de MediaPipe), Y arriba, frente a +Z, patillas a -Z. Materiales LENS_* = cristales, FRAME_* = marco (recolorear por nombre). ancho_total_mm = escala aplicada al modelo. medidas/precio = los carga la óptica (null en la demo). Cargar con GLTFLoader + MeshoptDecoder.",
+  "_nota": "GLB en metros. Origen = puente de la nariz (va al landmark 168 de MediaPipe), Y arriba, frente a +Z, patillas a -Z. Materiales LENS_* = cristales, FRAME_* = marco (recolorear por nombre). ancho_total_mm = escala aplicada al modelo. medidas/precio = los carga la óptica (null en la demo). Cargar con GLTFLoader + MeshoptDecoder. uso = categorías extra del catálogo (\"pantallas\", \"lectura\"); vacío si no aplica.",
   "lentes": [
     {
       "id": "optico-acetato-negro",
       "nombre": "Acetato negro",
       "tipo": "receta",
+      "uso": [
+        "pantallas"
+      ],
       "familia": "cuadrado-grueso",
       "archivo": "/models/ready/optico-acetato-negro.glb",
       "peso_kb": 454,
@@ -70,6 +73,10 @@
       "id": "optico-rectangular-negro",
       "nombre": "Rectangular negro",
       "tipo": "receta",
+      "uso": [
+        "pantallas",
+        "lectura"
+      ],
       "familia": "rectangular",
       "archivo": "/models/ready/optico-rectangular-negro.glb",
       "peso_kb": 988,
@@ -119,6 +126,9 @@
       "id": "optico-cateye-carey",
       "nombre": "Cat-eye carey",
       "tipo": "receta",
+      "uso": [
+        "pantallas"
+      ],
       "familia": "cat-eye",
       "archivo": "/models/ready/optico-cateye-carey.glb",
       "peso_kb": 579,
@@ -180,6 +190,9 @@
       "id": "optico-panto-negro",
       "nombre": "Panto negro",
       "tipo": "receta",
+      "uso": [
+        "lectura"
+      ],
       "familia": "redondo-panto",
       "archivo": "/models/ready/optico-panto-negro.glb",
       "peso_kb": 750,
@@ -245,6 +258,9 @@
       "id": "optico-redondo-dorado",
       "nombre": "Redondo dorado",
       "tipo": "receta",
+      "uso": [
+        "lectura"
+      ],
       "familia": "redondo-metal",
       "archivo": "/models/ready/optico-redondo-dorado.glb",
       "peso_kb": 402,
@@ -305,6 +321,10 @@
       "id": "optico-medio-aro-negro",
       "nombre": "Medio aro negro",
       "tipo": "receta",
+      "uso": [
+        "pantallas",
+        "lectura"
+      ],
       "familia": "rectangular-medio-aro",
       "archivo": "/models/ready/optico-medio-aro-negro.glb",
       "peso_kb": 418,
@@ -365,6 +385,7 @@
       "id": "sol-aviador-dorado",
       "nombre": "Aviador dorado",
       "tipo": "sol",
+      "uso": [],
       "familia": "aviador",
       "archivo": "/models/ready/sol-aviador-dorado.glb",
       "peso_kb": 350,
@@ -432,6 +453,7 @@
       "id": "sol-redondo-steampunk",
       "nombre": "Redondo steampunk",
       "tipo": "sol",
+      "uso": [],
       "familia": "redondo",
       "archivo": "/models/ready/sol-redondo-steampunk.glb",
       "peso_kb": 469,

@@ -2,7 +2,7 @@
 
 Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No pasar a la siguiente sin cumplir el "listo" de la actual.
 
-**Fase actual: F3b** (cambio de prioridad: el diseño va primero). La rama `fase/F3b-nivel-2` sale de `fase/F4-admin` con T4.3 commiteada sin probar. **F4 en pausa.** De F1 falta probar en celu T1.7–T1.9 y el Android.
+**Fase actual: F3b — Edición 01** (rama `fase/F3b-edicion-01`, sale de `fase/F3b-nivel-2`). Rediseño completo de la home, ver `specs/08-edicion-01.md`. **F4 en pausa** (T4.3 commiteada sin probar). De F1 falta probar en celu T1.7–T1.9 y el Android.
 
 ---
 
@@ -79,7 +79,14 @@ Una tarea por vez, probar en celu Y en PC después de cada una.
 - [ ] T3b.12 Auditoría: Lighthouse celu (≥ 95 rendimiento), PC, prefers-reduced-motion, FPS.
 **Listo F3b:** se ve como una marca de moda en celu y en PC, y el celu sigue cargando en < 2,5 s.
 
+## F3b — Edición 01 (rama `fase/F3b-edicion-01`) — ver specs/08-edicion-01.md
+- [ ] TE.1 Home nueva programada (10 capítulos, celu y PC). **Falta probar en celu real** (Chrome Android + Safari iPhone) y en PC.
+- [ ] TE.2 Medir Lighthouse celu (LCP < 2,5 s, JS inicial ≤ 60 KB; hoy el JS inicial pesa ~8 KB gzip) y contraste AA con el grano.
+- [ ] TE.3 Lookbook: cambiar los macros provisorios por caras (spec 07 §7).
+- [ ] TE.4 Ventajas: la óptica completa "[X] minutos".
+
 ## F4 — Panel admin (rama `fase/F4-admin`)
+**Pendiente de F3b Edición 01:** la tabla `lentes` de Supabase no tiene la columna `uso` (Pantallas / Lectura). Mientras tanto `src/sitio/datos.js` la toma de `public/models/catalogo.json` por código. Agregarla en T4.1/T4.2 (`uso text[]`) y en el seed.
 - [ ] T4.1 Supabase (plan gratis): tablas `lentes`, `variantes`, `sitio`; storage para GLB y miniaturas.
 - [ ] T4.2 Panel estilo iPhone: login, ABM de lentes (subir GLB ya normalizado + miniaturas), precios, textos.
 - [ ] T4.3 La página lee de Supabase con fallback al JSON.

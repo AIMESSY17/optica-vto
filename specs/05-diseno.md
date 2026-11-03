@@ -1,5 +1,6 @@
 # 05 — Diseño (versión liviana, aprobada)
 
+> **La home ahora sigue `08-edicion-01.md`** (capítulos claro/oscuro, grano, tipografía gigante), que manda sobre esta spec y sobre la 07 en la home. Esta spec sigue valiendo para la ficha, las hojas y el probador.
 > El nivel 2 visual (F3b) está en `07-nivel-2.md` y manda sobre esta spec donde la contradiga. Las excepciones están al final, en "Excepciones del nivel 2".
 
 ## Concepto: "VER CLARO"
