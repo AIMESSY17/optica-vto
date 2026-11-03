@@ -4,3 +4,4 @@ dist/
 raw/
 *.zip
 .DS_Store
+public/mediapipe/wasm/

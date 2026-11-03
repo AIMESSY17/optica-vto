@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FOCO · prueba del probador</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/src/vto-test.css" />
+  </head>
+  <body>
+    <!-- F0: página pelada para medir si el probador anda fluido en un celu real. Sin diseño. -->
+    <main id="inicio">
+      <h1>Prueba del probador</h1>
+      <p>Abrí la cámara y mirá el lente puesto. Girá la cabeza despacio.</p>
+      <button id="abrir" type="button">Abrir cámara</button>
+      <p class="privacidad">Tu cámara no se graba ni se sube: todo pasa en tu celular.</p>
+      <p id="estado" role="status"></p>
+    </main>
+
+    <div id="probador" hidden>
+      <video id="video" playsinline muted autoplay></video>
+      <canvas id="lienzo3d"></canvas>
+      <canvas id="lienzo2d"></canvas>
+      <div id="aviso" role="status"></div>
+      <button id="cerrar" type="button" aria-label="Cerrar">×</button>
+    </div>
+
+    <script type="module" src="/src/vto-test.js"></script>
+  </body>
+</html>

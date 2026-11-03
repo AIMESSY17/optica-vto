@@ -8,15 +8,23 @@ Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No 
 
 ## F0 — Prueba de concepto del probador (rama `fase/F0-poc-vto`)
 Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin diseño.
-- [ ] T0.1 Proyecto Vite vanilla + `@vitejs/plugin-basic-ssl` + `npm run dev` con `--host`. Estructura `src/vto/`.
-- [ ] T0.2 Instalar `three` y `@mediapipe/tasks-vision`; copiar wasm a `public/mediapipe/wasm/`; descargar `face_landmarker.task` a `public/mediapipe/`.
-- [ ] T0.3 Página `vto-test.html`: botón "Abrir cámara" → video frontal espejado a pantalla completa.
-- [ ] T0.4 FaceLandmarker en modo VIDEO (GPU con fallback CPU) dibujando los 478 puntos en un canvas 2D.
-- [ ] T0.5 Escena Three.js con cámara 63° + grupo cabeza con la matriz de MediaPipe + oclusor + lente `L01` (spec 02 §3–4).
-- [ ] T0.6 Modo `?debug=1`: FPS en pantalla, mostrar/ocultar oclusor, sliders del offset `AJUSTE_PUENTE`.
-- [ ] T0.7 Suavizado One Euro (spec 02 §6).
+- [x] T0.1 Proyecto Vite vanilla + `@vitejs/plugin-basic-ssl` + `npm run dev` con `--host`. Estructura `src/vto/`.
+- [x] T0.2 Instalar `three` y `@mediapipe/tasks-vision`; copiar wasm a `public/mediapipe/wasm/`; descargar `face_landmarker.task` a `public/mediapipe/`.
+- [x] T0.3 Página `vto-test.html`: botón "Abrir cámara" → video frontal espejado a pantalla completa.
+- [x] T0.4 FaceLandmarker en modo VIDEO (GPU con fallback CPU) dibujando los 478 puntos en un canvas 2D.
+- [x] T0.5 Escena Three.js con cámara 63° + grupo cabeza con la matriz de MediaPipe + oclusor + lente `L01` (spec 02 §3–4).
+- [x] T0.6 Modo `?debug=1`: FPS en pantalla, mostrar/ocultar oclusor, sliders del offset `AJUSTE_PUENTE`.
+- [x] T0.7 Suavizado One Euro (spec 02 §6).
 - [ ] T0.8 Deploy en Vercel y prueba en Chrome Android + Safari iPhone.
 **Listo F0:** R-02, R-03, R-05 y ≥ 30 FPS en un celular de gama media con la URL de Vercel. Anotar acá los FPS medidos por equipo.
+
+> T0.1–T0.7 probados en PC (Chrome con cámara simulada, 2026-11-03). **Falta lo de celular real (T0.8)**: R-02 con giro ±45° y R-03 de perfil solo se pueden comprobar con una cara de verdad moviéndose.
+
+| Equipo | Navegador | FPS (`?debug=1`) | Motor | R-02 | R-03 | R-05 | Notas |
+|---|---|---|---|---|---|---|---|
+| PC (cámara simulada) | Chrome 3D por software | 26–31 | GPU | — | — | sí (0,15 → 0,03 mm/cuadro) | referencia, no cuenta para el "listo" |
+| _Android gama media_ | Chrome | | | | | | |
+| _iPhone_ | Safari | | | | | | |
 
 ## F1 — Probador completo (rama `fase/F1-probador`)
 - [ ] T1.1 Módulo `abrirProbador()` con import dinámico y la API de spec 02.
