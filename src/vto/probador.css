@@ -100,6 +100,19 @@
 .vto-boton-prin { background: var(--tinta); color: var(--fondo) !important; font-weight: 600; }
 .vto-boton:disabled { opacity: 0.45; cursor: default; }
 
+/* Loader (T1.9): dos aros que "se enfocan" (dos copias corridas que se juntan). Solo transform/opacity. */
+.vto-cargador { position: absolute; left: 0; right: 0; top: 38%; display: grid; justify-items: center; gap: 14px;
+  pointer-events: none; color: var(--tinta); }
+.vto-cargador[hidden] { display: none; }
+.vto-aros { position: relative; width: 120px; height: 48px; }
+.vto-aros > span { position: absolute; inset: 0; }
+.vto-aros svg { display: block; }
+.vto-aros-a { animation: vto-foco-a 1.6s ease-in-out infinite alternate; }
+.vto-aros-b { animation: vto-foco-b 1.6s ease-in-out infinite alternate; }
+@keyframes vto-foco-a { from { transform: translateX(-7px); opacity: 0.35; } 70%, to { transform: none; opacity: 1; } }
+@keyframes vto-foco-b { from { transform: translateX(7px); opacity: 0.35; } 70%, to { transform: none; opacity: 0; } }
+.vto-cargador-texto { margin: 0; padding: 6px 14px; border-radius: 16px; background: var(--translucido); font-size: 14px; }
+
 /* Destello al sacar la foto */
 .vto-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
 .vto-flash.activo { animation: vto-destello 260ms ease-out; }
@@ -129,6 +142,8 @@
   .vto-3d { transition: none; }
   .vto-mini.cargando img { animation: none; opacity: 0.5; }
   .vto-flash.activo { animation: none; }
+  .vto-aros-a, .vto-aros-b { animation: none; }
+  .vto-aros-b { opacity: 0; }
 }
 
 /* Panel de ?debug=1: arriba, debajo de la píldora, para no tapar el carrusel. Se pliega tocando "debug". */

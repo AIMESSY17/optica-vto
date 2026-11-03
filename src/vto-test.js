@@ -2,6 +2,9 @@
 // index.js es liviano (sin three ni MediaPipe): lo bajamos al cargar la página para que, al tocar el botón,
 // abrirProbador() arranque en el mismo toque (iOS pide la cámara solo así). Lo pesado baja recién ahí.
 import { RUTAS } from './vto/constantes.js';
+import { registrarCacheProbador } from './vto/cache.js';
+
+registrarCacheProbador(); // la segunda vez el probador abre desde el celu
 
 const $ = (id) => document.getElementById(id);
 const inicio = $('inicio'), probador = $('probador');

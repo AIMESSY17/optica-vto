@@ -47,3 +47,10 @@ export const RUTAS = {
 
 // Sin cara por más de este tiempo → reiniciar el suavizado (para que no "viaje" desde la pose vieja).
 export const MS_SIN_CARA_REINICIO = 300;
+
+// Degradación por rendimiento (T1.7, spec 02 §8). Umbrales de FPS para pasar a los niveles 1, 2 y 3.
+export const DEGRADACION = { ventanaMs: 2000, esperaInicialMs: 3000, umbrales: [28, 24, 18] };
+
+// Intro "ficha técnica" (T1.8, spec 02 §12 y spec 05): 3 puntos rojos y una cota fina, después aparece el lente.
+// Landmarks: ángulos externos de los ojos (33, 263) y puente (168). La cota va sobre las cejas.
+export const INTRO = { duracionMs: 1000, puntos: [33, 263, 168], cejas: [105, 334] };

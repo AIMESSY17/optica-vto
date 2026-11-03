@@ -51,7 +51,7 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   const marcar = (opts) => { ui.marcar(indice, opts); ui.marcarColor(colorElegido[indice]); };
   marcar({ suave: false });
   requestAnimationFrame(() => ui.marcar(indice, { suave: false })); // por si el contenedor recién se mostró
-  ui.aviso('Abriendo la cámara…');
+  ui.cargador('Abriendo la cámara');
 
   const pedidoDe = (i) => ({ url: rutaPublica(lentes[i].archivo), info: lentes[i], variante: varianteDe(i) });
   const vecinos = (i) => {
@@ -156,7 +156,7 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
       if (cerrado) return;
       ui.ocultarPlanB();
       ui.fotoHabilitada(false);
-      ui.aviso('Analizando la foto…');
+      ui.cargador('Analizando la foto');
       try {
         const canvas = await leerSelfie(archivo);
         if (cerrado) return;
@@ -165,17 +165,13 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
           motor = await arrancarMotor(canvas, 'imagen');
           motor.precargar(vecinos(indice));
         }
-        if (motor.ponerImagen(canvas)) {
-          ui.aviso('');
-          ui.fotoHabilitada(true);
-        } else {
-          ui.aviso('');
-          ui.mostrarPlanB(SIN_CARA);
-        }
+        ui.cargador(null);
+        if (motor.ponerImagen(canvas)) ui.fotoHabilitada(true);
+        else ui.mostrarPlanB(SIN_CARA);
       } catch (e) {
         if (e.tipo === 'cerrado') return;
         console.error('[vto] no se pudo usar la selfie', e);
-        ui.aviso('');
+        ui.cargador(null);
         ui.mostrarPlanB('No pudimos abrir esa foto. Probá con otra.');
       }
     });
@@ -189,17 +185,17 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
     if (!(e instanceof ErrorCamara)) { api.cerrar(); throw e; }
     // Sin cámara: el probador sigue abierto con la opción de la selfie.
     modo = 'imagen';
-    ui.aviso('');
+    ui.cargador(null);
     ui.mostrarPlanB(MOTIVOS[e.tipo] ?? `${e.message} Probátelos con una selfie.`);
     return api;
   }
 
   try {
     if (cerrado) { cerrarCamara(ui.video, stream); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
-    ui.aviso('Cargando el probador…');
+    ui.cargador('Preparando el probador');
     const inicial = indice;
     motor = await arrancarMotor(ui.video, 'video');
-    ui.aviso('');
+    ui.cargador(null);
     ui.fotoHabilitada(true);
     // Si eligieron otro lente o color mientras cargaba, ponerlo ahora; si no, precargar los vecinos.
     if (indice !== inicial) api.cambiarLente(lentes[indice].id);

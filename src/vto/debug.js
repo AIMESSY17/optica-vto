@@ -1,7 +1,7 @@
 // Panel de ?debug=1 (T0.6, T1.0): FPS, mostrar/ocultar oclusor y puntos, sliders de AJUSTE_PUENTE, oclusor, patillas y suavizado.
 import { ajusteCristal } from './cristales.js';
 
-export function crearDebug(contenedor, { escena, suavizado, opciones }) {
+export function crearDebug(contenedor, { escena, suavizado, opciones, degradacion }) {
   const panel = document.createElement('details');
   panel.className = 'debug';
   panel.open = true;
@@ -36,6 +36,7 @@ export function crearDebug(contenedor, { escena, suavizado, opciones }) {
   }
 
   // Sliders
+  const calidad = { valor: -1 };
   const sliders = [
     { nombre: 'ajuste X (cm)', obj: escena.ajuste, k: 'x', min: -2, max: 2, paso: 0.05, alCambiar: escena.aplicarAjuste },
     { nombre: 'ajuste Y (cm)', obj: escena.ajuste, k: 'y', min: -2, max: 2, paso: 0.05, alCambiar: escena.aplicarAjuste },
@@ -47,6 +48,7 @@ export function crearDebug(contenedor, { escena, suavizado, opciones }) {
     { nombre: 'cristal receta (opacidad)', obj: ajusteCristal.alfaReceta, k: 'value', min: 0, max: 0.3, paso: 0.01 },
     { nombre: 'reflejo cristal', obj: ajusteCristal.reflejo, k: 'value', min: 0, max: 3, paso: 0.1 },
     { nombre: 'tope brillo cristal', obj: ajusteCristal.topeBrillo, k: 'value', min: 0, max: 0.4, paso: 0.01 },
+    { nombre: 'calidad forzada (-1 = auto)', obj: calidad, k: 'valor', min: -1, max: 3, paso: 1, alCambiar: () => degradacion?.forzar(calidad.valor) },
     { nombre: 'minCutoff', obj: suavizado, k: 'minCutoff', min: 0.05, max: 5, paso: 0.05 },
     { nombre: 'beta', obj: suavizado, k: 'beta', min: 0, max: 0.5, paso: 0.005 },
   ];

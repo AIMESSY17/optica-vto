@@ -3,6 +3,8 @@
 const base = import.meta.env.BASE_URL;
 export const rutaPublica = (ruta) => base + String(ruta).replace(/^\//, '');
 
+// Loader (T1.9): dos aros de lente. Se dibujan dos copias que se juntan, como cuando algo entra en foco.
+const AROS = '<svg viewBox="0 0 120 48" width="120" height="48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="30" cy="24" r="18"/><circle cx="90" cy="24" r="18"/><path d="M48 22 Q60 15 72 22"/></svg>';
 const ICONO_CERRAR = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6 L18 18 M18 6 L6 18"/></svg>';
 
 export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onConsultar, onFoto, onSelfie }) {
@@ -31,6 +33,10 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
           <button type="button" class="vto-boton vto-boton-prin" data-quiero>Lo quiero</button>
         </div>
       </section>
+    </div>
+    <div class="vto-cargador" role="status" hidden>
+      <div class="vto-aros" aria-hidden="true"><span class="vto-aros-a">${AROS}</span><span class="vto-aros-b">${AROS}</span></div>
+      <p class="vto-cargador-texto"></p>
     </div>
     <div class="vto-flash" aria-hidden="true"></div>
     <div class="vto-planb" hidden>
@@ -150,6 +156,12 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
     // Miniatura "cargando" mientras baja el lente (si no estaba precargado).
     cargando(i, si) { botones[i]?.classList.toggle('cargando', si); },
 
+    // Loader temático (T1.9). `texto` null = ocultarlo.
+    cargador(texto) {
+      const c = $('.vto-cargador');
+      c.hidden = !texto;
+      if (texto) c.querySelector('.vto-cargador-texto').textContent = texto;
+    },
     // Botón "Sacar foto": se habilita cuando hay un lente en la cara.
     fotoHabilitada(si) { $('[data-foto]').disabled = !si; },
     destello() {

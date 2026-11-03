@@ -4,13 +4,15 @@
 // Dos modos:
 //   'video'  → cámara en vivo, espejada (lo normal).
 //   'imagen' → plan B (R-09): una selfie fija. Se detecta la cara una vez y se dibuja sin espejar.
-import { Matrix4 } from 'three';
+import { Matrix4, Quaternion, Vector3 } from 'three';
 import { crearDetector } from './detector.js';
 import { crearEscena } from './escena.js';
 import { calcularEncuadre } from './encuadre.js';
 import { crearPuntos } from './puntos.js';
 import { FiltroPose } from './one-euro.js';
-import { MS_SIN_CARA_REINICIO, SUAVIZADO } from './constantes.js';
+import { crearDegradacion } from './degradacion.js';
+import { crearIntro } from './intro.js';
+import { INTRO, MS_SIN_CARA_REINICIO, SUAVIZADO } from './constantes.js';
 
 // `fuente` = <video> (modo video) o un <canvas> con la selfie (modo imagen).
 // `lente` = { url, info, variante }: url del GLB, su entrada del catálogo y el color elegido.
@@ -18,6 +20,9 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   const enVivo = modo === 'video';
   const escena = crearEscena(lienzo3d);
   const puntos = crearPuntos(lienzo2d);
+  const intro = crearIntro(lienzo2d, { espejado: enVivo });
+  let codigoActual = lente.info?.codigo ?? '';
+  const degradacion = crearDegradacion((nivel) => escena.ponerCalidad(nivel));
   const suavizado = { ...SUAVIZADO };
   const filtro = new FiltroPose(suavizado);
   const opciones = { oclusor: false, puntos: debug, lente: true };
@@ -62,7 +67,7 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   let dbg = null;
   if (debug) {
     const { crearDebug } = await import('./debug.js');
-    dbg = crearDebug(contenedor, { escena, suavizado, opciones });
+    dbg = crearDebug(contenedor, { escena, suavizado, opciones, degradacion });
   }
 
   // Encuadre: recalcular si gira el celu o cambia el tamaño de la fuente.
@@ -71,6 +76,7 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
     enc = calcularEncuadre(contenedor, fuente);
     escena.encuadrar(enc);
     puntos.encuadrar(enc);
+    intro.encuadrar(enc);
   };
   encuadrar();
   const ro = new ResizeObserver(encuadrar);
@@ -78,7 +84,10 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   if (enVivo) fuente.addEventListener('resize', encuadrar);
 
   // iOS pausa el video al volver de otra app: lo reanudamos.
-  const alVolver = () => { if (enVivo && !document.hidden && fuente.paused) fuente.play().catch(() => {}); };
+  const alVolver = () => {
+    degradacion.reiniciar(); // la pausa no cuenta como lentitud
+    if (enVivo && !document.hidden && fuente.paused) fuente.play().catch(() => {});
+  };
   document.addEventListener('visibilitychange', alVolver);
 
   const matCruda = new Matrix4();
@@ -93,6 +102,42 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   let landmarksFoto = null;
 
   const lienzo = () => escena.renderer.domElement;
+  const mostrarLente = (si) => lienzo().classList.toggle('visible', si);
+
+  // Intro (T1.8): la primera vez que aparece la cara. Devuelve si ya se puede mostrar el lente.
+  let introInicio = null, introHecha = false;
+  const pasoIntro = (landmarks, ahora) => {
+    if (introHecha) return true;
+    if (!landmarks) {
+      if (introInicio !== null) { introInicio = null; intro.limpiar(); } // se fue la cara: arranca de nuevo
+      return false;
+    }
+    introInicio ??= ahora;
+    const t = (ahora - introInicio) / INTRO.duracionMs;
+    if (t >= 1) { introHecha = true; intro.limpiar(); return true; }
+    intro.dibujar(landmarks, t, codigoActual);
+    return t >= intro.aparicionLente;
+  };
+
+  // Nivel 2 de degradación: en los cuadros sin detección se estima la pose siguiendo el movimiento.
+  const poseAnt = { p: new Vector3(), q: new Quaternion(), e: new Vector3() };
+  const poseAct = { p: new Vector3(), q: new Quaternion(), e: new Vector3() };
+  let poses = 0;
+  const matEstimada = new Matrix4();
+  const guardarPose = (m) => {
+    poseAnt.p.copy(poseAct.p); poseAnt.q.copy(poseAct.q); poseAnt.e.copy(poseAct.e);
+    m.decompose(poseAct.p, poseAct.q, poseAct.e);
+    poses++;
+  };
+  const vEst = new Vector3(), qEst = new Quaternion();
+  const estimarPose = () => {
+    // Medio paso hacia adelante desde la última detección (las detecciones están a 2 cuadros).
+    vEst.lerpVectors(poseAnt.p, poseAct.p, 1.5);
+    qEst.slerpQuaternions(poseAnt.q, poseAct.q, 1.5);
+    return matEstimada.compose(vEst, qEst, poseAct.e);
+  };
+  let saltear = false;
+
   const dibujarPuntos = (landmarks) => {
     if (opciones.puntos && landmarks) { puntos.dibujar(landmarks); puntosSucios = true; }
     else if (puntosSucios) { puntos.limpiar(); puntosSucios = false; }
@@ -115,6 +160,17 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   async function cuadro() {
     if (!activo) return;
     const t0 = performance.now();
+
+    // Nivel 2+: un cuadro sí y uno no se detecta; en el del medio se dibuja la pose estimada.
+    saltear = degradacion.nivel >= 2 && !saltear && hayCara && introHecha && poses >= 2;
+    if (saltear) {
+      escena.ponerMatriz(estimarPose());
+      escena.render();
+      degradacion.cuadro(t0);
+      dbg?.cuadro(0);
+      return programar();
+    }
+
     let res = null;
     try {
       res = await detector.detectar(fuente);
@@ -137,22 +193,26 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
       hayCara = true;
       matCruda.fromArray(matriz.data);
       escena.ponerMatriz(filtro.filtrar(matCruda, t1 / 1000, matSuave));
+      guardarPose(matSuave);
       escena.render();
       dbg?.pose(matCruda, matSuave);
-      lienzo().classList.add('visible');
+      mostrarLente(pasoIntro(landmarks, t1));
       aviso('');
     } else {
       // Sin cara: el lente se desvanece en 150 ms (CSS), no queda congelado.
       hayCara = false;
-      lienzo().classList.remove('visible');
+      poses = 0;
+      pasoIntro(null, t1);
+      mostrarLente(false);
       dbg?.sinCara();
       if (t1 - ultimaCara > 1500) aviso('No te veo: mirá a la cámara con buena luz');
     }
-    dibujarPuntos(landmarks);
+    if (introHecha) dibujarPuntos(landmarks);
+    degradacion.cuadro(t1);
 
     if (dbg) {
       dbg.cuadro(t1 - t0);
-      dbg.actualizar(`${detector.delegate} · video ${fuente.videoWidth}×${fuente.videoHeight}`);
+      dbg.actualizar(`${detector.delegate} · video ${fuente.videoWidth}×${fuente.videoHeight} · calidad ${degradacion.nivel}`);
     }
     programar();
   }
@@ -162,8 +222,11 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
   let rafImagen = 0;
   const dibujarImagen = () => {
     if (!activo) return;
-    if (hayCara) escena.render();
-    dibujarPuntos(landmarksFoto);
+    if (hayCara) {
+      escena.render();
+      mostrarLente(pasoIntro(landmarksFoto, performance.now()));
+    }
+    if (introHecha) dibujarPuntos(landmarksFoto);
     rafImagen = requestAnimationFrame(dibujarImagen);
   };
 
@@ -179,6 +242,7 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
       if (!activo || mio !== turno) return false;
       escena.ponerLente(modelo, pedido.variante);
       urlActual = pedido.url;
+      codigoActual = pedido.info?.codigo ?? codigoActual;
       podar(vecinos.map((v) => v.url));
       return true;
     },
@@ -204,7 +268,11 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
       hayCara = !!(landmarks && matriz);
       landmarksFoto = hayCara ? landmarks : null;
       if (hayCara) escena.ponerMatriz(matCruda.fromArray(matriz.data));
-      lienzo().classList.toggle('visible', hayCara);
+      // Foto nueva: la intro se vuelve a ver sobre esta cara.
+      introHecha = false;
+      introInicio = null;
+      intro.limpiar();
+      mostrarLente(false);
       return hayCara;
     },
 
@@ -222,7 +290,7 @@ export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3
       const ctx = out.getContext('2d');
       if (enVivo) { ctx.translate(out.width, 0); ctx.scale(-1, 1); } // igual que en pantalla
       ctx.drawImage(fuente, sx, sy, sw, sh, 0, 0, out.width, out.height);
-      if (hayCara && opciones.lente) {
+      if (hayCara && opciones.lente && lienzo().classList.contains('visible')) {
         escena.render(); // el canvas 3D se lee justo después de dibujar
         ctx.drawImage(lienzo(), 0, 0, out.width, out.height);
       }

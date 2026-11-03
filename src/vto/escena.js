@@ -23,6 +23,11 @@ export function crearEscena(canvas) {
   const luz = new THREE.DirectionalLight(0xffffff, 1.2);
   luz.position.set(0.3, 1, 1);
   escena.add(luz);
+  // Luz de reemplazo para el nivel 3 de degradación (sin environment). Apagada hasta que haga falta.
+  const luzSimple = new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 0);
+  escena.add(luzSimple);
+  const ambiente = escena.environment;
+  let encActual = null;
 
   // Cámara en el origen mirando a -Z, como la de MediaPipe.
   const camara = new THREE.PerspectiveCamera(CAMARA.fov, 16 / 9, CAMARA.near, CAMARA.far);
@@ -131,7 +136,19 @@ export function crearEscena(canvas) {
     ponerVariante(variante) { if (lente) aplicarVariante(lente, variante); },
 
     // Encuadre: el video se muestra con object-fit: cover, así que recortamos la vista 3D igual.
+    // Degradación por rendimiento (T1.7, spec 02 §8). 0 = calidad completa.
+    //   1: pixelRatio 1 · 3: sin environment (luz simple). El nivel 2 (detectar cada 2 cuadros) es del motor.
+    // El antialias no se puede apagar sin crear otro WebGL (habría que recompilar todo): no se toca.
+    ponerCalidad(nivel) {
+      renderer.setPixelRatio(nivel >= 1 ? 1 : Math.min(window.devicePixelRatio, 2));
+      if (encActual) renderer.setSize(encActual.ancho, encActual.alto, false);
+      const simple = nivel >= 3;
+      escena.environment = simple ? null : ambiente;
+      luzSimple.intensity = simple ? 2.2 : 0;
+    },
+
     encuadrar(enc) {
+      encActual = enc;
       camara.aspect = enc.videoAncho / enc.videoAlto;
       camara.setViewOffset(enc.anchoTotal, enc.altoTotal, enc.offsetX, enc.offsetY, enc.ancho, enc.alto);
       camara.updateProjectionMatrix();
@@ -158,7 +175,7 @@ export function crearEscena(canvas) {
     liberar() {
       if (lente) for (const m of materialesDeVariantes(lente)) m.dispose();
       liberar(escena);
-      escena.environment?.dispose();
+      ambiente?.dispose();
       matOculto.dispose();
       matVisible.dispose();
       renderer.dispose();
