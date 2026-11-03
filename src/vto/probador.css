@@ -1,0 +1,94 @@
+/* Probador (spec 05 "Probador (UI)", boceto docs/boceto/probador.html). Viene con index.js: no pesa en la página inicial. */
+.vto {
+  --fondo: #FAFAF8; --tinta: #111111; --gris: #6B6B68; --gris-claro: #9A9A96;
+  --superficie: #F1F0EC; --borde: #DAD9D4; --rojo-cota: #E0301E;
+  --translucido: rgba(250, 250, 248, 0.92);
+  position: absolute; inset: 0; overflow: hidden; background: #E9E9E9; color: var(--tinta);
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+/* Sin zoom ni arrastre sobre la cámara. Va por capa y no en .vto: si no, también bloquea deslizar el carrusel. */
+.vto-video, .vto-3d, .vto-2d, .vto-arriba, .vto-aviso, .vto-manija, .vto-fila, .vto-botones { touch-action: none; }
+.vto button { font: inherit; color: inherit; cursor: pointer; }
+.vto button:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+
+/* Video y lienzos espejados juntos para que coincidan (spec 02 §1) */
+.vto-video, .vto-3d, .vto-2d { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+.vto-video { object-fit: cover; }
+.vto-3d { opacity: 0; transition: opacity 150ms linear; }
+.vto-3d.visible { opacity: 1; }
+.vto-2d { pointer-events: none; }
+
+/* Arriba: píldora con código + nombre, y cerrar redondo */
+.vto-arriba {
+  position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; right: 16px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; pointer-events: none;
+}
+.vto-arriba > * { pointer-events: auto; }
+.vto-pildora {
+  min-width: 0; height: 44px; padding: 0 16px; border-radius: 22px; background: var(--translucido);
+  display: flex; align-items: center; gap: 10px;
+}
+.vto-codigo { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 10px; color: var(--rojo-cota); }
+.vto-nombre { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vto-cerrar {
+  flex: 0 0 44px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--translucido);
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+
+/* Abajo: aviso + panel blanco */
+.vto-abajo { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; }
+.vto-aviso {
+  margin-bottom: 12px; max-width: calc(100% - 32px); padding: 8px 16px; border-radius: 18px;
+  background: var(--translucido); font-size: 14px; text-align: center;
+}
+.vto-aviso:empty { display: none; }
+.vto-panel {
+  align-self: stretch; background: var(--fondo); border-radius: 22px 22px 0 0;
+  padding: 8px 0 max(24px, env(safe-area-inset-bottom));
+}
+.vto-manija { width: 40px; height: 4px; border-radius: 2px; background: var(--borde); margin: 0 auto 12px; }
+
+/* Carrusel de miniaturas: el elegido con borde negro de 2 px */
+.vto-carrusel {
+  display: flex; gap: 10px; padding: 2px 16px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity; scrollbar-width: none; touch-action: pan-x;
+}
+.vto-carrusel::-webkit-scrollbar { display: none; }
+.vto-mini {
+  flex: 0 0 72px; height: 56px; padding: 8px; border: 0; border-radius: 12px; background: var(--superficie);
+  scroll-snap-align: center;
+}
+.vto-mini[aria-pressed="true"] { padding: 6px; border: 2px solid var(--tinta); }
+.vto-mini img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.vto-mini.cargando img { animation: vto-latido 0.9s ease-in-out infinite alternate; }
+@keyframes vto-latido { to { opacity: 0.35; } }
+
+.vto-fila { display: flex; align-items: center; justify-content: flex-end; min-height: 28px; padding: 14px 16px 0; }
+.vto-privado { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 9px; color: var(--gris-claro); }
+
+.vto-botones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 16px 0; }
+.vto-boton { height: 52px; border: 0; border-radius: 26px; font-size: 15px; }
+.vto-boton-sec { background: var(--superficie); font-weight: 500; }
+.vto-boton-prin { background: var(--tinta); color: var(--fondo) !important; font-weight: 600; }
+.vto-boton:disabled { opacity: 0.45; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vto-3d { transition: none; }
+  .vto-mini.cargando img { animation: none; opacity: 0.5; }
+}
+
+/* Panel de ?debug=1: arriba, debajo de la píldora, para no tapar el carrusel. Se pliega tocando "debug". */
+.vto .debug {
+  position: absolute; left: 12px; right: 12px; top: calc(max(16px, env(safe-area-inset-top)) + 56px); max-width: 420px;
+  max-height: 42%; overflow: auto; padding: 8px 12px; border-radius: 12px;
+  background: rgba(250, 250, 248, .88); color: #111; font: 11px/1.3 ui-monospace, Menlo, monospace;
+}
+.vto .debug summary { cursor: pointer; font-weight: 700; }
+.vto .debug .info { white-space: pre-line; }
+.vto .debug .fps { display: inline; font-size: 18px; font-weight: 700; margin-left: 6px; }
+.vto .debug .fps.mal { color: #E0301E; }
+.vto .debug .casillas, .vto .debug .sliders { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+.vto .debug label { display: block; margin-top: 4px; }
+.vto .debug input[type="range"] { width: 100%; margin: 2px 0; }
+.vto .debug button { margin-top: 6px; font: inherit; padding: 4px 10px; }

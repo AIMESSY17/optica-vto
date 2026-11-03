@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>FOCO · prueba del probador</title>
     <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&display=swap" />
     <link rel="stylesheet" href="/src/vto-test.css" />
   </head>
   <body>
-    <!-- F0: página pelada para medir si el probador anda fluido en un celu real. Sin diseño. -->
+    <!-- Página de prueba: el probador ya tiene su diseño (F1); esta portada sigue pelada hasta F3. -->
     <main id="inicio">
       <h1>Prueba del probador</h1>
       <p>Abrí la cámara y mirá el lente puesto. Girá la cabeza despacio.</p>
@@ -17,13 +20,8 @@
       <p id="estado" role="status"></p>
     </main>
 
-    <div id="probador" hidden>
-      <video id="video" playsinline muted autoplay></video>
-      <canvas id="lienzo3d"></canvas>
-      <canvas id="lienzo2d"></canvas>
-      <div id="aviso" role="status"></div>
-      <button id="cerrar" type="button" aria-label="Cerrar">×</button>
-    </div>
+    <!-- abrirProbador() arma acá adentro el video, el 3D, la píldora y el carrusel. -->
+    <div id="probador" hidden></div>
 
     <script type="module" src="/src/vto-test.js"></script>
   </body>

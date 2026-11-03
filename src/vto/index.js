@@ -1,0 +1,104 @@
+// Probador virtual: API pública (spec 02 "API del módulo").
+// La página lo abre con import('./vto/index.js'). Este archivo es liviano: three y MediaPipe
+// viven en motor.js y se descargan recién al llamar a abrirProbador().
+//
+//   const vto = await abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug });
+//   vto.cambiarLente(id); vto.cambiarColor(variante); vto.sacarFoto(); vto.cerrar();
+import './probador.css';
+import { abrirCamara, cerrarCamara, ErrorCamara } from './camara.js';
+import { crearUi, rutaPublica } from './ui.js';
+
+export { ErrorCamara };
+
+// Llamar directo desde el toque del usuario, sin esperas antes: iOS pide la cámara solo dentro del toque.
+export async function abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug = false }) {
+  const lentes = catalogo.lentes;
+  if (!lentes?.length) throw new Error('El catálogo no tiene lentes');
+  let indice = Math.max(0, lentes.findIndex((l) => l.id === idInicial || l.codigo === idInicial));
+
+  let cerrado = false;
+  let stream = null;
+  let motor = null;
+
+  const ui = crearUi(contenedor, {
+    lentes,
+    onElegir: (i) => api.cambiarLente(lentes[i].id),
+    onCerrar: () => { api.cerrar(); onCerrar?.(); },
+    onConsultar: () => onConsultar?.(lentes[indice]),
+  });
+  ui.marcar(indice, { suave: false });
+  requestAnimationFrame(() => ui.marcar(indice, { suave: false })); // por si el contenedor recién se mostró
+  ui.aviso('Abriendo la cámara…');
+
+  const urlDe = (i) => rutaPublica(lentes[i].archivo);
+  const vecinos = (i) => {
+    const n = lentes.length;
+    return [...new Set([(i - 1 + n) % n, (i + 1) % n])].filter((k) => k !== i).map(urlDe);
+  };
+
+  const api = {
+    // Cambia de lente sin cerrar la cámara (R-06). Con el anterior/siguiente precargados es inmediato.
+    async cambiarLente(id) {
+      const i = lentes.findIndex((l) => l.id === id || l.codigo === id);
+      if (i < 0 || cerrado) return;
+      indice = i;
+      ui.marcar(i);
+      if (!motor) return; // todavía cargando: al terminar se pone el último elegido
+      const url = urlDe(i);
+      const precargado = motor.estaCargado(url);
+      if (!precargado) ui.cargando(i, true);
+      try {
+        const puesto = await motor.cambiarLente(url, vecinos(i));
+        if (puesto) motor.precargar(vecinos(i));
+      } catch (e) {
+        console.error('[vto] no se pudo cargar el lente', e);
+        if (indice === i) ui.aviso('No se pudo cargar este lente. Probá de nuevo.');
+      } finally {
+        ui.cargando(i, false);
+      }
+    },
+
+    // T1.4
+    cambiarColor() { console.warn('[vto] cambiarColor llega en T1.4'); },
+    // T1.5
+    async sacarFoto() { console.warn('[vto] sacarFoto llega en T1.5'); return null; },
+
+    // Libera cámara, GPU y DOM.
+    cerrar() {
+      if (cerrado) return;
+      cerrado = true;
+      motor?.cerrar();
+      motor = null;
+      cerrarCamara(ui.video, stream);
+      stream = null;
+      ui.quitar();
+    },
+  };
+
+  // La cámara se pide antes de cualquier espera; el motor se descarga en paralelo.
+  const camara = abrirCamara(ui.video);
+  const modulo = import('./motor.js');
+  modulo.catch(() => {});
+
+  try {
+    stream = await camara;
+    if (cerrado) { cerrarCamara(ui.video, stream); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
+    ui.aviso('Cargando el probador…');
+    const { iniciarMotor } = await modulo;
+    const inicial = indice;
+    const m = await iniciarMotor({
+      contenedor: ui.raiz, video: ui.video, lienzo3d: ui.lienzo3d, lienzo2d: ui.lienzo2d,
+      aviso: ui.aviso, urlLente: urlDe(inicial), debug,
+    });
+    if (cerrado) { m.cerrar(); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
+    motor = m;
+    ui.aviso('');
+    // Si eligieron otro lente mientras cargaba, ponerlo ahora; si no, precargar los vecinos.
+    if (indice !== inicial) api.cambiarLente(lentes[indice].id);
+    else motor.precargar(vecinos(inicial));
+    return api;
+  } catch (e) {
+    api.cerrar();
+    throw e;
+  }
+}

@@ -52,6 +52,7 @@ export function crearEscena(canvas) {
   const matVisible = new THREE.MeshBasicMaterial({ color: 0xe0301e, wireframe: true, transparent: true, opacity: 0.6 });
   let oclusor = null;
   let lente = null;
+  const cargador = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 
   return {
     renderer,
@@ -73,12 +74,11 @@ export function crearEscena(canvas) {
       cabeza.add(oclusor);
     },
 
-    async cargarLente(url) {
-      const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-      const gltf = await loader.loadAsync(url);
+    // Descarga y prepara un lente, sin ponerlo en la cara (sirve para precargar el anterior y el siguiente).
+    async cargarModelo(url) {
+      const gltf = await cargador.loadAsync(url);
       const nuevo = gltf.scene;
       prepararPatillas(nuevo);
-      abrirPatillas(nuevo, forma.aperturaPatillas, forma.separacionPatillas);
       nuevo.scale.setScalar(ESCALA_LENTE);
       nuevo.traverse((o) => {
         if (!o.isMesh) return;
@@ -93,10 +93,26 @@ export function crearEscena(canvas) {
           if (/^LENS_/i.test(m.name)) m.depthWrite = false;
         }
       });
-      if (lente) { anclaLente.remove(lente); liberar(lente); }
-      lente = nuevo;
+      return nuevo;
+    },
+
+    // Prepara los shaders de un lente todavía no puesto, para que al elegirlo aparezca sin trabarse.
+    async precompilarModelo(modelo) {
+      await renderer.compileAsync(modelo, camara, escena);
+    },
+
+    // Pone en la cara un lente ya cargado. El anterior no se libera acá: lo maneja la caché del motor.
+    ponerLente(modelo) {
+      if (lente === modelo) return;
+      if (lente) anclaLente.remove(lente);
+      lente = modelo;
+      abrirPatillas(lente, forma.aperturaPatillas, forma.separacionPatillas);
       anclaLente.add(lente);
-      return lente;
+    },
+
+    liberarModelo(modelo) {
+      if (modelo === lente) return; // nunca el que está puesto
+      liberar(modelo);
     },
 
     // Encuadre: el video se muestra con object-fit: cover, así que recortamos la vista 3D igual.

@@ -1,65 +1,56 @@
-// Página de prueba del probador (F0, T0.3). Three.js y MediaPipe se cargan recién al tocar "Abrir cámara".
-import { abrirCamara, cerrarCamara } from './vto/camara.js';
+// Página de prueba del probador (F0 → F1). La página real de la óptica llega en F3.
+// index.js es liviano (sin three ni MediaPipe): lo bajamos al cargar la página para que, al tocar el botón,
+// abrirProbador() arranque en el mismo toque (iOS pide la cámara solo así). Lo pesado baja recién ahí.
 import { RUTAS } from './vto/constantes.js';
 
 const $ = (id) => document.getElementById(id);
-const inicio = $('inicio'), probador = $('probador'), video = $('video');
-const botonAbrir = $('abrir'), estado = $('estado'), aviso = $('aviso');
+const inicio = $('inicio'), probador = $('probador');
+const botonAbrir = $('abrir'), estado = $('estado');
 
 const params = new URLSearchParams(location.search);
 const debug = params.get('debug') === '1';
-const codigoLente = (params.get('lente') || 'L01').toUpperCase(); // ?lente=L03 para probar otro
+const lenteInicial = (params.get('lente') || 'L01').toUpperCase(); // ?lente=L03 para arrancar con otro
 
-let stream = null;
-let poc = null;
-let sesion = 0; // cambia al cerrar: si se cierra mientras carga, se descarta lo que llegue tarde
+let modulo = null;
+const cargaModulo = import('./vto/index.js').then((m) => (modulo = m));
+const cargaCatalogo = fetch(RUTAS.catalogo).then((r) => r.json());
+let catalogo = null;
+cargaCatalogo.then((c) => (catalogo = c), () => {});
+cargaModulo.catch(() => {});
+
+let abriendo = false;
 
 botonAbrir.addEventListener('click', async () => {
-  const miSesion = ++sesion;
+  if (abriendo) return;
+  abriendo = true;
   botonAbrir.disabled = true;
-  estado.textContent = 'Abriendo la cámara…';
-  // La cámara se pide primero y dentro del toque (iOS); el resto se descarga en paralelo.
-  const motor = import('./vto/poc.js');
-  const catalogo = fetch(RUTAS.catalogo).then((r) => r.json());
-  motor.catch(() => {}); catalogo.catch(() => {});
-
+  estado.textContent = '';
   try {
-    stream = await abrirCamara(video);
+    // Casi siempre ya está todo descargado y no hay espera antes de pedir la cámara.
+    const { abrirProbador } = modulo ?? (await cargaModulo);
+    const cat = catalogo ?? (await cargaCatalogo);
     inicio.hidden = true;
     probador.hidden = false;
-    aviso.textContent = 'Cargando el probador…';
-
-    const lente = (await catalogo).lentes.find((l) => l.codigo === codigoLente);
-    if (!lente) throw new Error(`No existe el lente ${codigoLente} en el catálogo`);
-    const { iniciarPoc } = await motor;
-    const nuevo = await iniciarPoc({
-      contenedor: probador, video, aviso, debug,
-      lienzo3d: $('lienzo3d'), lienzo2d: $('lienzo2d'),
-      urlLente: import.meta.env.BASE_URL + lente.archivo.replace(/^\//, ''),
+    await abrirProbador({
+      contenedor: probador,
+      catalogo: cat,
+      idInicial: lenteInicial,
+      debug,
+      onCerrar: volver,
+      onConsultar: (lente) => alert(`Lo quiero: ${lente.codigo} ${lente.nombre}\n(en F3 abre WhatsApp)`),
     });
-    if (miSesion !== sesion) return nuevo.cerrar(); // lo cerraron mientras cargaba
-    poc = nuevo;
-    aviso.textContent = '';
   } catch (e) {
-    if (miSesion !== sesion) return;
+    if (e.tipo === 'cerrado') return;
     console.error(e);
-    cerrar();
+    volver();
     estado.textContent = e.message || 'Algo falló al abrir el probador.';
+  } finally {
+    abriendo = false;
+    botonAbrir.disabled = false;
   }
 });
 
-$('cerrar').addEventListener('click', () => {
-  cerrar();
-  estado.textContent = '';
-});
-
-function cerrar() {
-  sesion++;
-  poc?.cerrar();
-  poc = null;
-  cerrarCamara(video, stream);
-  stream = null;
+function volver() {
   probador.hidden = true;
   inicio.hidden = false;
-  botonAbrir.disabled = false;
 }
