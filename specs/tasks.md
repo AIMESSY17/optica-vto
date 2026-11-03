@@ -32,8 +32,8 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 - [x] T1.2 Carrusel de los 8 lentes con precarga anterior/siguiente (R-06).
 - [x] T1.3 Materiales de cristal baratos para móvil; tintes de sol (S01, S02).
 - [x] T1.4 Variantes de color por `FRAME_*` (R-07).
-- [ ] T1.5 Foto con branding y Web Share (R-08).
-- [ ] T1.6 Plan B selfie (R-09).
+- [x] T1.5 Foto con branding y Web Share (R-08).
+- [x] T1.6 Plan B selfie (R-09).
 - [ ] T1.7 Degradación por FPS (spec 02 §8).
 - [ ] T1.8 Intro "ficha técnica" con puntos y cotas (R-13).
 - [ ] T1.9 Loader temático + Service Worker para caché.
