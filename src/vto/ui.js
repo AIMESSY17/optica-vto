@@ -5,7 +5,7 @@ export const rutaPublica = (ruta) => base + String(ruta).replace(/^\//, '');
 
 const ICONO_CERRAR = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6 L18 18 M18 6 L6 18"/></svg>';
 
-export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onConsultar }) {
+export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onConsultar, onFoto, onSelfie }) {
   const raiz = document.createElement('div');
   raiz.className = 'vto';
   raiz.innerHTML = `
@@ -14,6 +14,7 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
     <canvas class="vto-2d"></canvas>
     <div class="vto-arriba">
       <div class="vto-pildora"><span class="vto-codigo"></span><span class="vto-nombre"></span></div>
+      <label class="vto-otra-selfie" hidden>Otra selfie<input type="file" accept="image/*" data-selfie hidden></label>
       <button type="button" class="vto-cerrar" aria-label="Cerrar probador">${ICONO_CERRAR}</button>
     </div>
     <div class="vto-abajo">
@@ -30,6 +31,25 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
           <button type="button" class="vto-boton vto-boton-prin" data-quiero>Lo quiero</button>
         </div>
       </section>
+    </div>
+    <div class="vto-flash" aria-hidden="true"></div>
+    <div class="vto-planb" hidden>
+      <div class="vto-tarjeta" role="dialog" aria-labelledby="vto-planb-titulo">
+        <h2 id="vto-planb-titulo">Probátelos con una selfie</h2>
+        <p class="vto-planb-motivo"></p>
+        <label class="vto-boton vto-boton-prin">Sacarme una selfie<input type="file" accept="image/*" capture="user" data-selfie hidden></label>
+        <label class="vto-boton vto-boton-borde">Elegir una foto<input type="file" accept="image/*" data-selfie hidden></label>
+        <p class="vto-nota">La foto no se sube: se analiza en tu celular.</p>
+      </div>
+    </div>
+    <div class="vto-foto" hidden>
+      <div class="vto-foto-caja" role="dialog" aria-label="Tu foto con el lente">
+        <img alt="Tu foto con el lente puesto">
+        <div class="vto-botones">
+          <button type="button" class="vto-boton vto-boton-sec" data-volver>Volver</button>
+          <button type="button" class="vto-boton vto-boton-prin" data-compartir>Compartir</button>
+        </div>
+      </div>
     </div>
   `;
   const $ = (sel) => raiz.querySelector(sel);
@@ -80,6 +100,26 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
 
   $('.vto-cerrar').addEventListener('click', onCerrar);
   $('[data-quiero]').addEventListener('click', onConsultar);
+  $('[data-foto]').addEventListener('click', onFoto);
+  // Selfie del plan B (y "Otra selfie"): se lee el archivo y se limpia el input para poder elegir la misma de nuevo.
+  for (const input of raiz.querySelectorAll('[data-selfie]')) {
+    input.addEventListener('change', () => {
+      const archivo = input.files?.[0];
+      input.value = '';
+      if (archivo) onSelfie(archivo);
+    });
+  }
+  // Vista previa de la foto
+  const vistaFoto = $('.vto-foto');
+  let alCompartir = null;
+  let urlFoto = null;
+  const cerrarFoto = () => {
+    vistaFoto.hidden = true;
+    if (urlFoto) URL.revokeObjectURL(urlFoto);
+    urlFoto = null;
+  };
+  $('[data-volver]').addEventListener('click', cerrarFoto);
+  $('[data-compartir]').addEventListener('click', () => alCompartir?.());
   contenedor.append(raiz);
 
   const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -110,8 +150,44 @@ export function crearUi(contenedor, { lentes, onElegir, onColor, onCerrar, onCon
     // Miniatura "cargando" mientras baja el lente (si no estaba precargado).
     cargando(i, si) { botones[i]?.classList.toggle('cargando', si); },
 
+    // Botón "Sacar foto": se habilita cuando hay un lente en la cara.
+    fotoHabilitada(si) { $('[data-foto]').disabled = !si; },
+    destello() {
+      if (reducido) return;
+      const f = $('.vto-flash');
+      f.classList.remove('activo');
+      void f.offsetWidth; // reiniciar la animación
+      f.classList.add('activo');
+    },
+    // Muestra la foto armada. `accion` = { texto: 'Compartir' | 'Guardar', alTocar }.
+    mostrarFoto(blob, accion) {
+      if (urlFoto) URL.revokeObjectURL(urlFoto);
+      urlFoto = URL.createObjectURL(blob);
+      vistaFoto.querySelector('img').src = urlFoto;
+      $('[data-compartir]').textContent = accion.texto;
+      alCompartir = accion.alTocar;
+      vistaFoto.hidden = false;
+      $('[data-compartir]').focus();
+    },
+    cerrarFoto,
+
+    // Plan B (R-09): tarjeta para subir una selfie. `motivo` explica por qué no hay cámara.
+    mostrarPlanB(motivo) {
+      $('.vto-planb-motivo').textContent = motivo;
+      $('.vto-planb').hidden = false;
+    },
+    ocultarPlanB() { $('.vto-planb').hidden = true; },
+    // Pasa la pantalla a modo foto: la selfie en lugar del video, sin espejo.
+    ponerImagen(canvas) {
+      raiz.querySelector('.vto-imagen')?.remove();
+      canvas.className = 'vto-imagen';
+      raiz.querySelector('.vto-video').after(canvas);
+      raiz.classList.add('modo-foto');
+      $('.vto-otra-selfie').hidden = false;
+    },
+
     aviso(texto) { if (avisoEl.textContent !== texto) avisoEl.textContent = texto; },
 
-    quitar() { raiz.remove(); },
+    quitar() { cerrarFoto(); raiz.remove(); },
   };
 }

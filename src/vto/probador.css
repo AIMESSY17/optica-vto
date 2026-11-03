@@ -1,7 +1,7 @@
 /* Probador (spec 05 "Probador (UI)", boceto docs/boceto/probador.html). Viene con index.js: no pesa en la página inicial. */
 .vto {
   --fondo: #FAFAF8; --tinta: #111111; --gris: #6B6B68; --gris-claro: #9A9A96;
-  --superficie: #F1F0EC; --borde: #DAD9D4; --rojo-cota: #E0301E;
+  --superficie: #F1F0EC; --borde: #DAD9D4; --linea: #E4E3DF; --rojo-cota: #E0301E;
   --translucido: rgba(250, 250, 248, 0.92);
   position: absolute; inset: 0; overflow: hidden; background: #E9E9E9; color: var(--tinta);
   font-family: 'Archivo', system-ui, -apple-system, sans-serif;
@@ -19,6 +19,11 @@
 .vto-3d.visible { opacity: 1; }
 .vto-2d { pointer-events: none; }
 
+/* Plan B (selfie): la foto ocupa el lugar del video y NO se espeja (es una foto, se ve como salió) */
+.vto-imagen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; touch-action: none; }
+.vto.modo-foto .vto-video { display: none; }
+.vto.modo-foto .vto-3d, .vto.modo-foto .vto-2d { transform: none; }
+
 /* Arriba: píldora con código + nombre, y cerrar redondo */
 .vto-arriba {
   position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; right: 16px;
@@ -31,6 +36,11 @@
 }
 .vto-codigo { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 10px; color: var(--rojo-cota); }
 .vto-nombre { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vto-otra-selfie {
+  margin-left: auto; height: 44px; padding: 0 16px; border-radius: 22px; background: var(--translucido);
+  display: flex; align-items: center; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.vto-otra-selfie[hidden] { display: none; }
 .vto-cerrar {
   flex: 0 0 44px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--translucido);
   display: flex; align-items: center; justify-content: center; padding: 0;
@@ -83,14 +93,42 @@
 .vto-privado { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 9px; color: var(--gris-claro); }
 
 .vto-botones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 16px 0; }
-.vto-boton { height: 52px; border: 0; border-radius: 26px; font-size: 15px; }
+.vto-boton { height: 52px; border: 0; border-radius: 26px; font-size: 15px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.vto-boton-borde { border: 1px solid var(--borde); background: transparent; font-weight: 500; }
 .vto-boton-sec { background: var(--superficie); font-weight: 500; }
 .vto-boton-prin { background: var(--tinta); color: var(--fondo) !important; font-weight: 600; }
 .vto-boton:disabled { opacity: 0.45; cursor: default; }
 
+/* Destello al sacar la foto */
+.vto-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.vto-flash.activo { animation: vto-destello 260ms ease-out; }
+@keyframes vto-destello { from { opacity: 0.85; } to { opacity: 0; } }
+
+/* Plan B: tarjeta blanca arriba; el carrusel de abajo sigue disponible para elegir el lente antes */
+.vto-planb { position: absolute; left: 16px; right: 16px; top: calc(max(16px, env(safe-area-inset-top)) + 64px);
+  display: flex; justify-content: center; }
+.vto-planb[hidden] { display: none; }
+.vto-tarjeta { width: 100%; max-width: 360px; background: var(--fondo); border-radius: 22px; padding: 24px 20px 20px;
+  display: grid; gap: 10px; text-align: center; }
+.vto-tarjeta h2 { margin: 0; font-weight: 800; font-stretch: 115%; letter-spacing: -0.03em; font-size: 22px; line-height: 1.15; }
+.vto-tarjeta p { margin: 0; }
+.vto-planb-motivo { color: var(--gris); font-size: 14px; line-height: 1.4; margin-bottom: 6px !important; }
+.vto-nota { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 10px; color: var(--gris-claro); margin-top: 4px !important; }
+
+/* Vista previa de la foto */
+.vto-foto { position: absolute; inset: 0; background: var(--fondo); display: flex; align-items: center;
+  justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+.vto-foto[hidden] { display: none; }
+.vto-foto-caja { width: 100%; max-width: 420px; display: grid; gap: 4px; justify-items: center; }
+.vto-foto img { display: block; max-width: 100%; max-height: calc(100vh - 140px); max-height: calc(100dvh - 140px);
+  border-radius: 12px; border: 1px solid var(--linea, #E4E3DF); }
+.vto-foto .vto-botones { width: 100%; padding: 12px 0 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .vto-3d { transition: none; }
   .vto-mini.cargando img { animation: none; opacity: 0.5; }
+  .vto-flash.activo { animation: none; }
 }
 
 /* Panel de ?debug=1: arriba, debajo de la píldora, para no tapar el carrusel. Se pliega tocando "debug". */

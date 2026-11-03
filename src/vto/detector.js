@@ -42,6 +42,15 @@ export async function crearDetector({ runningMode = 'VIDEO' } = {}) {
         return null;
       }
     },
+    // Modo IMAGE (plan B con selfie): una sola detección sobre una imagen fija.
+    detectarImagen(imagen) {
+      try {
+        return landmarker.detect(imagen);
+      } catch (e) {
+        console.error('[vto] error al analizar la foto', e);
+        return null;
+      }
+    },
     cerrar() { landmarker.close(); },
   };
 }

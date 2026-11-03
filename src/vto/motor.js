@@ -1,5 +1,9 @@
 // Motor del probador: une cámara, MediaPipe, suavizado y Three.js (spec 02).
 // Es la parte pesada (three + mediapipe): index.js lo importa recién al abrir el probador.
+//
+// Dos modos:
+//   'video'  → cámara en vivo, espejada (lo normal).
+//   'imagen' → plan B (R-09): una selfie fija. Se detecta la cara una vez y se dibuja sin espejar.
 import { Matrix4 } from 'three';
 import { crearDetector } from './detector.js';
 import { crearEscena } from './escena.js';
@@ -8,8 +12,10 @@ import { crearPuntos } from './puntos.js';
 import { FiltroPose } from './one-euro.js';
 import { MS_SIN_CARA_REINICIO, SUAVIZADO } from './constantes.js';
 
+// `fuente` = <video> (modo video) o un <canvas> con la selfie (modo imagen).
 // `lente` = { url, info, variante }: url del GLB, su entrada del catálogo y el color elegido.
-export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, aviso, lente, debug }) {
+export async function iniciarMotor({ contenedor, fuente, modo = 'video', lienzo3d, lienzo2d, aviso, lente, debug }) {
+  const enVivo = modo === 'video';
   const escena = crearEscena(lienzo3d);
   const puntos = crearPuntos(lienzo2d);
   const suavizado = { ...SUAVIZADO };
@@ -41,7 +47,7 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
   try {
     let primero;
     [detector, primero] = await Promise.all([
-      crearDetector(),
+      crearDetector({ runningMode: enVivo ? 'VIDEO' : 'IMAGE' }),
       Promise.all([escena.cargarOclusor(), obtener(lente)]).then(([, m]) => m),
     ]);
     escena.ponerLente(primero, lente.variante);
@@ -59,40 +65,50 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
     dbg = crearDebug(contenedor, { escena, suavizado, opciones });
   }
 
-  // Encuadre: recalcular si gira el celu o cambia el tamaño del video.
+  // Encuadre: recalcular si gira el celu o cambia el tamaño de la fuente.
+  let enc = null;
   const encuadrar = () => {
-    const enc = calcularEncuadre(contenedor, video);
+    enc = calcularEncuadre(contenedor, fuente);
     escena.encuadrar(enc);
     puntos.encuadrar(enc);
   };
   encuadrar();
   const ro = new ResizeObserver(encuadrar);
   ro.observe(contenedor);
-  video.addEventListener('resize', encuadrar);
+  if (enVivo) fuente.addEventListener('resize', encuadrar);
 
   // iOS pausa el video al volver de otra app: lo reanudamos.
-  const alVolver = () => { if (!document.hidden && video.paused) video.play().catch(() => {}); };
+  const alVolver = () => { if (enVivo && !document.hidden && fuente.paused) fuente.play().catch(() => {}); };
   document.addEventListener('visibilitychange', alVolver);
 
   const matCruda = new Matrix4();
   const matSuave = new Matrix4();
   let activo = true;
   let ultimaCara = -Infinity;
+  let hayCara = false;
   let puntosSucios = false;
   let erroresSeguidos = 0;
   let ultimoTiempoVideo = -1;
   let turno = 0; // si se tocan varios lentes seguidos, gana el último
+  let landmarksFoto = null;
 
+  const lienzo = () => escena.renderer.domElement;
+  const dibujarPuntos = (landmarks) => {
+    if (opciones.puntos && landmarks) { puntos.dibujar(landmarks); puntosSucios = true; }
+    else if (puntosSucios) { puntos.limpiar(); puntosSucios = false; }
+  };
+
+  // --- Modo video: un cuadro de detección por cada cuadro de la cámara ---
   const usarRvfc = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
   const programar = () => {
     if (!activo) return;
-    if (usarRvfc) video.requestVideoFrameCallback(cuadro);
+    if (usarRvfc) fuente.requestVideoFrameCallback(cuadro);
     else requestAnimationFrame(cuadroRaf);
   };
   // Sin requestVideoFrameCallback: solo procesar cuando hay un cuadro nuevo de la cámara.
   const cuadroRaf = () => {
-    if (video.currentTime === ultimoTiempoVideo) return programar();
-    ultimoTiempoVideo = video.currentTime;
+    if (fuente.currentTime === ultimoTiempoVideo) return programar();
+    ultimoTiempoVideo = fuente.currentTime;
     cuadro();
   };
 
@@ -101,7 +117,7 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
     const t0 = performance.now();
     let res = null;
     try {
-      res = await detector.detectar(video);
+      res = await detector.detectar(fuente);
       erroresSeguidos = 0;
     } catch (e) {
       if (erroresSeguidos++ < 3) console.error('[vto] error al detectar', e);
@@ -118,29 +134,41 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
     if (landmarks && matriz) {
       if (t1 - ultimaCara > MS_SIN_CARA_REINICIO) filtro.reiniciar();
       ultimaCara = t1;
+      hayCara = true;
       matCruda.fromArray(matriz.data);
       escena.ponerMatriz(filtro.filtrar(matCruda, t1 / 1000, matSuave));
       escena.render();
       dbg?.pose(matCruda, matSuave);
-      lienzo3d.classList.add('visible');
+      lienzo().classList.add('visible');
       aviso('');
     } else {
       // Sin cara: el lente se desvanece en 150 ms (CSS), no queda congelado.
-      lienzo3d.classList.remove('visible');
+      hayCara = false;
+      lienzo().classList.remove('visible');
       dbg?.sinCara();
       if (t1 - ultimaCara > 1500) aviso('No te veo: mirá a la cámara con buena luz');
     }
-
-    if (opciones.puntos && landmarks) { puntos.dibujar(landmarks); puntosSucios = true; }
-    else if (puntosSucios) { puntos.limpiar(); puntosSucios = false; }
+    dibujarPuntos(landmarks);
 
     if (dbg) {
       dbg.cuadro(t1 - t0);
-      dbg.actualizar(`${detector.delegate} · video ${video.videoWidth}×${video.videoHeight}`);
+      dbg.actualizar(`${detector.delegate} · video ${fuente.videoWidth}×${fuente.videoHeight}`);
     }
     programar();
   }
-  programar();
+
+  // --- Modo imagen: la pose es fija; se vuelve a dibujar en cada cuadro de pantalla
+  // (así cambiar lente, color o un slider de debug se ve al instante) ---
+  let rafImagen = 0;
+  const dibujarImagen = () => {
+    if (!activo) return;
+    if (hayCara) escena.render();
+    dibujarPuntos(landmarksFoto);
+    rafImagen = requestAnimationFrame(dibujarImagen);
+  };
+
+  if (enVivo) programar();
+  else rafImagen = requestAnimationFrame(dibujarImagen);
 
   return {
     // Cambia el lente sin cerrar la cámara. Devuelve false si mientras tanto se eligió otro o se cerró.
@@ -166,14 +194,50 @@ export async function iniciarMotor({ contenedor, video, lienzo3d, lienzo2d, avis
 
     estaCargado(url) { return cache.has(url); },
 
+    // Modo imagen: busca la cara en la selfie (un <canvas>). Devuelve false si no encontró ninguna.
+    ponerImagen(canvas) {
+      fuente = canvas;
+      encuadrar();
+      const res = detector.detectarImagen(canvas);
+      const landmarks = res?.faceLandmarks?.[0];
+      const matriz = res?.facialTransformationMatrixes?.[0];
+      hayCara = !!(landmarks && matriz);
+      landmarksFoto = hayCara ? landmarks : null;
+      if (hayCara) escena.ponerMatriz(matCruda.fromArray(matriz.data));
+      lienzo().classList.toggle('visible', hayCara);
+      return hayCara;
+    },
+
+    // Foto (R-08): lo que se ve en pantalla (fuente + lente), al tamaño real de la fuente.
+    // Devuelve un <canvas>; el marco FOCO lo agrega foto.js.
+    capturar() {
+      const escala = enc.anchoTotal / enc.videoAncho; // px de pantalla por px de la fuente
+      const sx = enc.offsetX / escala, sy = enc.offsetY / escala;
+      const sw = enc.ancho / escala, sh = enc.alto / escala;
+      // Si la fuente es chica, agrandar hasta la nitidez del 3D en pantalla.
+      const k = Math.max(1, (enc.alto * escena.renderer.getPixelRatio()) / sh);
+      const out = document.createElement('canvas');
+      out.width = Math.round(sw * k);
+      out.height = Math.round(sh * k);
+      const ctx = out.getContext('2d');
+      if (enVivo) { ctx.translate(out.width, 0); ctx.scale(-1, 1); } // igual que en pantalla
+      ctx.drawImage(fuente, sx, sy, sw, sh, 0, 0, out.width, out.height);
+      if (hayCara && opciones.lente) {
+        escena.render(); // el canvas 3D se lee justo después de dibujar
+        ctx.drawImage(lienzo(), 0, 0, out.width, out.height);
+      }
+      return out;
+    },
+
     cerrar() {
       activo = false;
+      cancelAnimationFrame(rafImagen);
       ro.disconnect();
-      video.removeEventListener('resize', encuadrar);
+      if (enVivo) fuente.removeEventListener('resize', encuadrar);
       document.removeEventListener('visibilitychange', alVolver);
       dbg?.quitar();
       puntos.limpiar();
-      lienzo3d.classList.remove('visible');
+      lienzo().classList.remove('visible');
       detector.cerrar();
       for (const p of cache.values()) p.then((m) => escena.liberarModelo(m), () => {});
       cache.clear();

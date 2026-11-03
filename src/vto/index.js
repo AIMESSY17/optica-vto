@@ -5,11 +5,24 @@
 //   const vto = await abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug });
 //   vto.cambiarLente(id); vto.cambiarColor(variante); vto.sacarFoto(); vto.cerrar();
 //   onConsultar(lente, variante) recibe el lente y el color elegidos (para el mensaje de WhatsApp).
+//   vto.modo: 'video' (cámara) o 'imagen' (plan B con selfie, R-09).
 import './probador.css';
 import { abrirCamara, cerrarCamara, ErrorCamara } from './camara.js';
 import { crearUi, rutaPublica } from './ui.js';
+import { armarFoto, compartir, descargar, nombreArchivo, puedeCompartir } from './foto.js';
 
 export { ErrorCamara };
+
+// Por qué no hay cámara, dicho para la persona (se muestra en la tarjeta del plan B).
+const MOTIVOS = {
+  permiso: 'No diste permiso para usar la cámara. Podés habilitarla en el navegador o probártelos con una selfie.',
+  'sin-camara': 'No encontramos una cámara en este equipo. Probátelos con una foto tuya de frente.',
+  'sin-soporte': 'Este navegador no deja usar la cámara. Probátelos con una foto tuya de frente.',
+  https: 'Este navegador no deja usar la cámara. Probátelos con una foto tuya de frente.',
+  ocupada: 'La cámara está ocupada por otra app. Cerrala y volvé a abrir el probador, o usá una selfie.',
+};
+const SIN_CARA = 'No encontramos una cara en esa foto. Probá con otra de frente, con buena luz y sin taparte los ojos.';
+const LADO_MAX_SELFIE = 1280; // px: más grande no mejora la detección y gasta memoria
 
 // Llamar directo desde el toque del usuario, sin esperas antes: iOS pide la cámara solo dentro del toque.
 export async function abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug = false }) {
@@ -24,6 +37,7 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   let cerrado = false;
   let stream = null;
   let motor = null;
+  let modo = 'video';
 
   const ui = crearUi(contenedor, {
     lentes,
@@ -31,6 +45,8 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
     onColor: (k) => api.cambiarColor(k),
     onCerrar: () => { api.cerrar(); onCerrar?.(); },
     onConsultar: () => onConsultar?.(lentes[indice], varianteDe(indice)),
+    onFoto: () => fotoDesdeBoton(),
+    onSelfie: (archivo) => usarSelfie(archivo),
   });
   const marcar = (opts) => { ui.marcar(indice, opts); ui.marcarColor(colorElegido[indice]); };
   marcar({ suave: false });
@@ -43,7 +59,22 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
     return [...new Set([(i - 1 + n) % n, (i + 1) % n])].filter((k) => k !== i).map(pedidoDe);
   };
 
+  // El motor se descarga ya, en paralelo con la cámara (o mientras eligen la selfie).
+  const modulo = import('./motor.js');
+  modulo.catch(() => {});
+  const arrancarMotor = async (fuente, modoMotor) => {
+    const { iniciarMotor } = await modulo;
+    const m = await iniciarMotor({
+      contenedor: ui.raiz, fuente, modo: modoMotor, lienzo3d: ui.lienzo3d, lienzo2d: ui.lienzo2d,
+      aviso: ui.aviso, lente: pedidoDe(indice), debug,
+    });
+    if (cerrado) { m.cerrar(); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
+    return m;
+  };
+
   const api = {
+    get modo() { return modo; },
+
     // Cambia de lente sin cerrar la cámara (R-06). Con el anterior/siguiente precargados es inmediato.
     async cambiarLente(id) {
       const i = lentes.findIndex((l) => l.id === id || l.codigo === id);
@@ -75,8 +106,11 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
       motor?.cambiarColor(lista[k]); // si todavía carga, se aplica al terminar (va en el pedido)
     },
 
-    // T1.5
-    async sacarFoto() { console.warn('[vto] sacarFoto llega en T1.5'); return null; },
+    // Foto con el lente puesto y la marca FOCO (R-08). Devuelve un Blob JPEG (o null si todavía no hay motor).
+    async sacarFoto() {
+      if (!motor || cerrado) return null;
+      return armarFoto(motor.capturar(), { lente: lentes[indice], variante: varianteDe(indice) });
+    },
 
     // Libera cámara, GPU y DOM.
     cerrar() {
@@ -90,24 +124,83 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
     },
   };
 
-  // La cámara se pide antes de cualquier espera; el motor se descarga en paralelo.
-  const camara = abrirCamara(ui.video);
-  const modulo = import('./motor.js');
-  modulo.catch(() => {});
+  // Botón "Sacar foto": destello, vista previa y Compartir / Guardar.
+  // Compartir se toca en la vista previa: iOS solo abre el menú si es justo en un toque.
+  let sacando = false;
+  async function fotoDesdeBoton() {
+    if (sacando || !motor) return;
+    sacando = true;
+    ui.destello();
+    try {
+      const lente = lentes[indice];
+      const blob = await api.sacarFoto();
+      if (!blob || cerrado) return;
+      const nombre = nombreArchivo(lente);
+      const archivo = new File([blob], nombre, { type: 'image/jpeg' });
+      const titulo = `FOCO · ${lente.codigo} ${lente.nombre}`;
+      ui.mostrarFoto(blob, puedeCompartir(archivo)
+        ? { texto: 'Compartir', alTocar: async () => { if (!(await compartir(archivo, titulo))) descargar(blob, nombre); } }
+        : { texto: 'Guardar', alTocar: () => descargar(blob, nombre) });
+    } catch (e) {
+      console.error('[vto] no se pudo sacar la foto', e);
+      ui.aviso('No se pudo sacar la foto. Probá de nuevo.');
+    } finally {
+      sacando = false;
+    }
+  }
+
+  // Plan B (R-09): una selfie en lugar de la cámara. Se puede cambiar de foto las veces que quieran.
+  let colaSelfie = Promise.resolve();
+  function usarSelfie(archivo) {
+    colaSelfie = colaSelfie.then(async () => {
+      if (cerrado) return;
+      ui.ocultarPlanB();
+      ui.fotoHabilitada(false);
+      ui.aviso('Analizando la foto…');
+      try {
+        const canvas = await leerSelfie(archivo);
+        if (cerrado) return;
+        ui.ponerImagen(canvas);
+        if (!motor) {
+          motor = await arrancarMotor(canvas, 'imagen');
+          motor.precargar(vecinos(indice));
+        }
+        if (motor.ponerImagen(canvas)) {
+          ui.aviso('');
+          ui.fotoHabilitada(true);
+        } else {
+          ui.aviso('');
+          ui.mostrarPlanB(SIN_CARA);
+        }
+      } catch (e) {
+        if (e.tipo === 'cerrado') return;
+        console.error('[vto] no se pudo usar la selfie', e);
+        ui.aviso('');
+        ui.mostrarPlanB('No pudimos abrir esa foto. Probá con otra.');
+      }
+    });
+    return colaSelfie;
+  }
 
   try {
-    stream = await camara;
+    stream = await abrirCamara(ui.video);
+  } catch (e) {
+    if (cerrado) throw new ErrorCamara('cerrado', 'Se cerró el probador');
+    if (!(e instanceof ErrorCamara)) { api.cerrar(); throw e; }
+    // Sin cámara: el probador sigue abierto con la opción de la selfie.
+    modo = 'imagen';
+    ui.aviso('');
+    ui.mostrarPlanB(MOTIVOS[e.tipo] ?? `${e.message} Probátelos con una selfie.`);
+    return api;
+  }
+
+  try {
     if (cerrado) { cerrarCamara(ui.video, stream); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
     ui.aviso('Cargando el probador…');
-    const { iniciarMotor } = await modulo;
     const inicial = indice;
-    const m = await iniciarMotor({
-      contenedor: ui.raiz, video: ui.video, lienzo3d: ui.lienzo3d, lienzo2d: ui.lienzo2d,
-      aviso: ui.aviso, lente: pedidoDe(inicial), debug,
-    });
-    if (cerrado) { m.cerrar(); throw new ErrorCamara('cerrado', 'Se cerró el probador'); }
-    motor = m;
+    motor = await arrancarMotor(ui.video, 'video');
     ui.aviso('');
+    ui.fotoHabilitada(true);
     // Si eligieron otro lente o color mientras cargaba, ponerlo ahora; si no, precargar los vecinos.
     if (indice !== inicial) api.cambiarLente(lentes[indice].id);
     else { motor.cambiarColor(varianteDe(indice)); motor.precargar(vecinos(inicial)); }
@@ -115,5 +208,23 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   } catch (e) {
     api.cerrar();
     throw e;
+  }
+}
+
+// Lee la selfie en un <canvas> (achicada). Con <img> el navegador ya respeta la orientación de la foto (EXIF).
+async function leerSelfie(archivo) {
+  const url = URL.createObjectURL(archivo);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const k = Math.min(1, LADO_MAX_SELFIE / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k);
+    c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  } finally {
+    URL.revokeObjectURL(url);
   }
 }
