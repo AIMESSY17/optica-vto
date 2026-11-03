@@ -2,7 +2,7 @@
 
 Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No pasar a la siguiente sin cumplir el "listo" de la actual.
 
-**Fase actual: F2** (de F1 falta probar en celu T1.7–T1.9 y el Android)
+**Fase actual: F3** (de F1 falta probar en celu T1.7–T1.9 y el Android)
 
 ---
 
@@ -52,7 +52,7 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 ## F3 — Sitio de la óptica FOCO (rama `fase/F3-sitio`)
 - [ ] T3.1 Tokens de diseño (paleta, tipos, grano) según spec 05.
 - [ ] T3.2 Header + hero "VER CLARO" (imagen primero, 3D después).
-- [ ] T3.3 Tira técnica.
+- [ ] T3.3 Tira técnica. **No va:** la spec 04 la sacó para alivianar ("sin tira técnica").
 - [ ] T3.4 Catálogo con fichas técnicas + filtros (R-20, R-21).
 - [ ] T3.5 Ficha de lente `#lente/Lxx` + WhatsApp (R-22).
 - [ ] T3.6 Servicios + turnos por WhatsApp (R-23, R-24).

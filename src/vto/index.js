@@ -2,7 +2,8 @@
 // La página lo abre con import('./vto/index.js'). Este archivo es liviano: three y MediaPipe
 // viven en motor.js y se descargan recién al llamar a abrirProbador().
 //
-//   const vto = await abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug });
+//   const vto = await abrirProbador({ contenedor, catalogo, idInicial, colorInicial, onConsultar, onCerrar, debug });
+//   colorInicial (opcional): nombre de la variante con que arranca el lente inicial (ej. el que eligieron en la ficha).
 //   vto.cambiarLente(id); vto.cambiarColor(variante); vto.sacarFoto(); vto.cerrar();
 //   onConsultar(lente, variante) recibe el lente y el color elegidos (para el mensaje de WhatsApp).
 //   vto.modo: 'video' (cámara) o 'imagen' (plan B con selfie, R-09).
@@ -25,7 +26,7 @@ const SIN_CARA = 'No encontramos una cara en esa foto. Probá con otra de frente
 const LADO_MAX_SELFIE = 1280; // px: más grande no mejora la detección y gasta memoria
 
 // Llamar directo desde el toque del usuario, sin esperas antes: iOS pide la cámara solo dentro del toque.
-export async function abrirProbador({ contenedor, catalogo, idInicial, onConsultar, onCerrar, debug = false }) {
+export async function abrirProbador({ contenedor, catalogo, idInicial, colorInicial, onConsultar, onCerrar, debug = false }) {
   const lentes = catalogo.lentes;
   if (!lentes?.length) throw new Error('El catálogo no tiene lentes');
   let indice = Math.max(0, lentes.findIndex((l) => l.id === idInicial || l.codigo === idInicial));
@@ -33,6 +34,10 @@ export async function abrirProbador({ contenedor, catalogo, idInicial, onConsult
   // Color elegido por lente (índice en `variantes`). Arranca en el que es como viene el modelo.
   const colorElegido = lentes.map((l) => Math.max(0, (l.variantes ?? []).findIndex((v) => v.original)));
   const varianteDe = (i) => lentes[i].variantes?.[colorElegido[i]] ?? null;
+  if (colorInicial) {
+    const k = (lentes[indice].variantes ?? []).findIndex((v) => v.nombre === colorInicial);
+    if (k >= 0) colorElegido[indice] = k;
+  }
 
   let cerrado = false;
   let stream = null;

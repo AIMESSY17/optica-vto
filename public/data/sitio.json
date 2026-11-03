@@ -1,0 +1,56 @@
+{
+  "_nota": "Todo lo editable de la página (spec 04). Los datos entre [CORCHETES] los completa la óptica (T5.1). En F4 esto viene de Supabase con este archivo de respaldo.",
+  "marca": {
+    "nombre": "FOCO",
+    "slogan": "Ver claro",
+    "rubro": "Óptica",
+    "ciudad": "Comodoro Rivadavia",
+    "provincia": "Chubut",
+    "whatsapp": "549XXXXXXXXXX",
+    "instagram": "",
+    "url": "https://foco-optica.vercel.app"
+  },
+  "seo": {
+    "titulo": "FOCO · Óptica en Comodoro Rivadavia · Probate los lentes en tu cara",
+    "descripcion": "Óptica en Comodoro Rivadavia. Probate los lentes en tu cara desde el celular, en 3D. Control de la vista, lentes de contacto, laboratorio y obras sociales."
+  },
+  "hero": {
+    "lente": "L01",
+    "texto": "Probate los lentes en tu cara desde el celular, en 3D. Sin descargar nada."
+  },
+  "direccion": "[DIRECCIÓN], Comodoro Rivadavia",
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Comodoro+Rivadavia+Chubut",
+  "horarios": [
+    { "dias": "Lun a vie", "horas": "[HORARIO]" },
+    { "dias": "Sáb", "horas": "[HORARIO]" }
+  ],
+  "formas": {
+    "Cuadrados": ["cuadrado-grueso", "rectangular", "rectangular-medio-aro"],
+    "Redondos": ["redondo-panto", "redondo-metal", "redondo"],
+    "Cat-eye": ["cat-eye"],
+    "Aviador": ["aviador"]
+  },
+  "motivos_turno": ["Control de la vista", "Lentes de contacto", "Lentes con receta", "Lentes de sol", "Taller de reparación"],
+  "servicios": [
+    { "nombre": "Control de la vista", "accion": "Turno", "motivo": "Control de la vista" },
+    { "nombre": "Lentes de contacto", "accion": "Turno", "motivo": "Lentes de contacto" },
+    { "nombre": "Laboratorio y armado", "accion": "Consultar", "motivo": "Lentes con receta" },
+    { "nombre": "Taller de reparación", "accion": "Consultar", "motivo": "Taller de reparación" }
+  ],
+  "obras_sociales": ["SEROS", "OSDE", "Swiss Medical", "PAMI", "Galeno", "Consultar otras"],
+  "faq": [
+    { "p": "¿Cuánto tarda el armado con receta?", "r": "[TIEMPO QUE DEFINA LA ÓPTICA]. Te avisamos por WhatsApp cuando están listos." },
+    { "p": "¿El probador mide mi graduación?", "r": "No. El probador te muestra cómo te queda el armazón. La graduación la mide un profesional en el control de la vista." },
+    { "p": "¿Trabajan con mi obra social?", "r": "Trabajamos con las obras sociales de la lista. Si la tuya no está, escribinos y te decimos qué cubre." },
+    { "p": "¿Qué necesito para hacerme lentes con receta?", "r": "La receta de tu oftalmólogo (vigente) o un control de la vista con nosotros. Si tenés obra social, traé tu credencial." },
+    { "p": "¿Tienen garantía?", "r": "Sí: [GARANTÍA QUE DEFINA LA ÓPTICA] en armazones y cristales por fallas de fabricación." },
+    { "p": "¿Hacen envíos?", "r": "[ENVÍOS QUE DEFINA LA ÓPTICA]. Los lentes con receta se retiran en el local para ajustarlos a tu cara." },
+    { "p": "¿Mis fotos del probador se guardan?", "r": "No. La cámara no se graba ni se sube: todo pasa en tu celular. La foto solo se guarda si vos la compartís o la descargás." }
+  ],
+  "mensajes": {
+    "consulta": "Hola FOCO! Me probé el {nombre} ({codigo}) en color {color} en la web y me interesa. ¿Tienen stock y precio con mi obra social? {link}",
+    "turno": "Hola FOCO! Quiero sacar turno para: {motivo}. Mi nombre es: ",
+    "general": "Hola FOCO! Tengo una consulta: "
+  },
+  "hecho_por": { "texto": "Sitio hecho por La PYME", "url": "" }
+}
