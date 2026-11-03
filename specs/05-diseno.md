@@ -18,7 +18,8 @@ Referencias de ambiente en `docs/referencias/` (lentes gigantes, tabla vista a t
 | `--superficie` | `#F1F0EC` | fondo de miniaturas, chips, botones secundarios |
 | `--linea` | `#E4E3DF` | separadores |
 | `--borde` | `#DAD9D4` | borde de botones secundarios |
-| `--rojo-cota` | `#E0301E` | **solo** cotas, puntos de la cara y códigos (L01). Nunca fondos ni botones |
+| `--rojo-cota` | `#E0301E` | **solo** líneas de cota y puntos de la cara. Nunca fondos ni botones |
+| `--rojo-texto` | `#C8291A` | texto rojo chico: códigos (L01), medidas (142 MM), rótulos (PROBADOR VIRTUAL). Más oscuro para que se lea a 9–11 px |
 
 **Prohibido:** bordó/marrón como acento, bloques negros grandes, fondos oscuros en secciones, grano, bordes duros por todos lados.
 
@@ -32,7 +33,7 @@ Referencias de ambiente en `docs/referencias/` (lentes gigantes, tabla vista a t
 - **Botón secundario:** borde 1 px `--borde`, fondo transparente, píldora. O solo texto con flecha ("Ver catálogo →").
 - **Chips de filtro:** píldoras 36 px; activo `--tinta`/blanco, resto `--superficie`.
 - **Tarjeta de lente:** sin borde. Caja `--superficie` con radio 4 px y la miniatura centrada; código rojo chico arriba-izq. Abajo nombre (600, 15 px) y subtítulo gris ("Receta · 3 colores"). Toda la tarjeta es el link a la ficha. 2 columnas en móvil.
-- **Cota:** línea roja de 1 px con dos topes verticales de 11 px y la medida en mono rojo 9 px. Se usa en el hero, en la ficha y sobre la cara.
+- **Cota:** línea roja de 1 px con dos topes verticales de 11 px y la medida en mono 9 px con `--rojo-texto`. Se usa en el hero, en la ficha y sobre la cara.
 - **Paneles (probador/ficha):** hoja blanca desde abajo, `border-radius: 22px 22px 0 0`, manija gris de 40×4 px.
 - **Separadores:** líneas de 1 px `--linea` (servicios, FAQ).
 - **Espaciado:** secciones con 40–48 px arriba/abajo, márgenes laterales 20 px.
