@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>miniaturas</title></head>
+<body style="margin:0;background:transparent">
+<!-- Página interna de scripts/miniaturas.mjs (T2.3). No es parte del sitio. -->
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { prepararPatillas } from '/src/vto/patillas.js';
+import { prepararCristales } from '/src/vto/cristales.js';
+import { aplicarVariante, prepararVariantes } from '/src/vto/variantes.js';
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setClearColor(0x000000, 0);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const escena = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+escena.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const luz = new THREE.DirectionalLight(0xffffff, 1.2);
+luz.position.set(0.3, 1, 1);
+escena.add(luz);
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+
+// Vistas: de frente, y 3/4 (frente hacia la izquierda, patillas hacia la derecha y atrás).
+const VISTAS = {
+  frente: { yaw: 0, pitch: 0.04 },
+  '34': { yaw: 0.62, pitch: 0.16 },
+};
+
+// Dibuja un lente y devuelve la imagen PNG (fondo transparente, sin recortar: recorta el script).
+window.renderizar = async ({ url, info, vista, ancho = 1600, alto = 900, sinMapas = [] }) => {
+  const gltf = await loader.loadAsync(url);
+  const modelo = gltf.scene;
+  prepararPatillas(modelo); // hornea las transformaciones (las patillas quedan como vienen)
+  prepararCristales(modelo, info); // los mismos cristales que en el probador
+  prepararVariantes(modelo, info);
+  const v = info.variantes ?? [];
+  aplicarVariante(modelo, v.find((x) => x.original) ?? v[0] ?? null); // el color con que arranca el probador
+  // Diagnóstico: apagar mapas (ej. ['normalMap']) para ver de dónde sale algo.
+  if (sinMapas.length) modelo.traverse((o) => { if (o.isMesh) for (const k of sinMapas) { o.material[k] = null; o.material.needsUpdate = true; } });
+  escena.add(modelo);
+
+  renderer.setSize(ancho, alto, false);
+  const caja = new THREE.Box3().setFromObject(modelo);
+  const centro = caja.getCenter(new THREE.Vector3());
+  const radio = caja.getBoundingSphere(new THREE.Sphere()).radius;
+  const camara = new THREE.PerspectiveCamera(18, ancho / alto, 0.001, 10);
+  const { yaw, pitch } = VISTAS[vista];
+  const d = radio / Math.sin(THREE.MathUtils.degToRad(18 / 2)) * 0.95;
+  camara.position.set(
+    centro.x + d * Math.sin(yaw) * Math.cos(pitch),
+    centro.y + d * Math.sin(pitch),
+    centro.z + d * Math.cos(yaw) * Math.cos(pitch),
+  );
+  camara.lookAt(centro);
+  await renderer.compileAsync(escena, camara);
+  renderer.render(escena, camara);
+  const png = canvas.toDataURL('image/png');
+
+  escena.remove(modelo);
+  modelo.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); [].concat(o.material).forEach((m) => m.dispose()); } });
+  return png;
+};
+window.listo = true;
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No pasar a la siguiente sin cumplir el "listo" de la actual.
 
-**Fase actual: F1**
+**Fase actual: F2** (de F1 falta probar en celu T1.7–T1.9 y el Android)
 
 ---
 
@@ -43,10 +43,10 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 ## F2 — Pipeline de modelos (rama `fase/F2-modelos`)
 - [x] T2.1 Normalizar los 8 modelos de la demo (hecho fuera del repo, ver spec 03).
 - [x] T2.2 Miniaturas frente/3/4 en WebP (hechas).
-- [ ] T2.3 `scripts/miniaturas.mjs` (Playwright + Three) para generar miniaturas de lentes nuevos.
-- [ ] T2.4 Limpiar la marca tenue en la textura de patillas de L01 y L03.
-- [ ] T2.5 Cristal para L02 (plano transparente con forma del aro).
-- [ ] T2.6 Texturas de variantes (carey, cristal, negro mate) CC0 o procedurales.
+- [x] T2.3 `scripts/miniaturas.mjs` (Playwright + Three) para generar miniaturas de lentes nuevos. Usa los cristales y el color inicial del probador; se regeneraron las 16.
+- [x] T2.4 Limpiar la marca tenue en la textura de patillas de L01 y L03. Con `scripts/tapar-textura.mjs`; en L03 además se quitaron las placas con el nombre modeladas (`--quitar-piezas`). Queda en L01 un contorno muy tenue modelado en la patilla (ver nota de F2).
+- [x] T2.5 Cristal para L02 (plano transparente con forma del aro). Lo agrega el probador al cargar (T1.3, `src/vto/cristales.js`).
+- [x] T2.6 Texturas de variantes (carey, cristal, negro mate) CC0 o procedurales. Carey procedural y cristal/negro por material (T1.4, `src/vto/variantes.js`).
 **Listo F2:** agregar un lente nuevo lleva < 10 min siguiendo spec 03.
 
 ## F3 — Sitio de la óptica FOCO (rama `fase/F3-sitio`)

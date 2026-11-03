@@ -7,14 +7,23 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "postinstall": "node scripts/preparar-mediapipe.mjs"
+    "postinstall": "node scripts/preparar-mediapipe.mjs",
+    "normalizar": "node scripts/normalizar.mjs",
+    "miniaturas": "node scripts/miniaturas.mjs",
+    "tapar-textura": "node scripts/tapar-textura.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.0",
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "meshoptimizer": "^1.3.0",
+    "playwright": "^1.62.1",
+    "sharp": "^0.35.5",
     "vite": "^8.3.5"
   }
 }

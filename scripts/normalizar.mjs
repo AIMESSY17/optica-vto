@@ -10,21 +10,37 @@
 //   --cristal-claro      convierte cristales a transparentes (para pasar un lente de sol a receta)
 //   --sin-textura-cristal saca la textura de los cristales (ej: logos de marca impresos)
 //   --quitar "regex"     borra las piezas cuyo nombre coincida (ej: logos de marcas reales)
+//   --listar             muestra las piezas numeradas (nombre, vértices, material, medidas en mm) y sale
+//   --quitar-piezas 1,3  borra piezas por número (el de --listar): para logos modelados en 3D cuando todas
+//                        las piezas se llaman igual
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { flatten, clearNodeTransform, prune, dedup, weld, simplify, textureCompress, meshopt, metalRough, getBounds } from '@gltf-transform/functions';
-import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
+import { flatten, clearNodeTransform, prune, dedup, weld, simplify, textureCompress, meshopt, metalRough, getBounds, dequantize } from '@gltf-transform/functions';
+import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 
 const args = process.argv.slice(2); const [input, output] = args;
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true); };
 const anchoMM = Number(opt('ancho', 140)), lensRe = opt('cristal', null), rot = opt('rotar', null), maxTris = Number(opt('max-tris', 60000));
-await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
-const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
+await MeshoptEncoder.ready; await MeshoptDecoder.ready; await MeshoptSimplifier.ready;
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder }) // decoder: para poder releer GLB ya comprimidos;
 const doc = await io.read(input); const root = doc.getRoot();
+const piezas = root.listNodes().filter((n) => n.getMesh());
+if (args.includes('--listar')) {
+  piezas.forEach((n, i) => { const b = getBounds(n), mm = (k) => `${Math.round(b.min[k] * 1000)}..${Math.round(b.max[k] * 1000)}`;
+    const prims = n.getMesh().listPrimitives();
+    console.log(`#${i}  ${n.getName() || '-'} / ${n.getMesh().getName() || '-'}  vértices ${prims.reduce((s, p) => s + p.getAttribute('POSITION').getCount(), 0)}  material ${prims.map((p) => p.getMaterial()?.getName() ?? '-').join(',')}  x ${mm(0)} y ${mm(1)} z ${mm(2)} (unidades del archivo ×1000)`); });
+  process.exit(0);
+}
+if (opt('quitar-piezas', null)) {
+  const nums = new Set(String(opt('quitar-piezas')).split(',').map(Number));
+  piezas.forEach((n, i) => { if (nums.has(i)) { console.log(`quito pieza #${i}`); n.getMesh().dispose(); n.dispose(); } });
+}
 
 // 1) convertir specular-glossiness (no soportado por three.js) a metal-rough
 if (root.listExtensionsUsed().some(e => e.extensionName === 'KHR_materials_pbrSpecularGlossiness')) await doc.transform(metalRough());
+// 1b) si el GLB ya venía comprimido (cuantizado), pasar a números comunes: si no, al hornear se rompen las normales
+await doc.transform(dequantize());
 // 2) hornear transformaciones (las animaciones bloquean el flatten, se borran: un lente no las necesita)
 for (const a of root.listAnimations()) a.dispose();
 if (opt('quitar', null)) { const q = new RegExp(opt('quitar'), 'i'); for (const n of root.listNodes()) if (n.getMesh() && (q.test(n.getName()) || q.test(n.getMesh().getName()))) { n.getMesh().dispose(); n.dispose(); } }

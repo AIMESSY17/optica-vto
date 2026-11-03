@@ -38,4 +38,7 @@ npm run dev       # vite --host (https)
 npm run build
 npm run preview
 node scripts/normalizar.mjs entrada.glb public/models/ready/x.glb --ancho 140 --cristal "lens"
+node scripts/normalizar.mjs entrada.glb x --listar        # piezas numeradas (para --quitar-piezas 1,3: logos modelados)
+node scripts/tapar-textura.mjs entrada.glb salida.glb --material FRAME_0 --zona base:x,y,w,h:dx,dy   # tapar logos en texturas
+npm run miniaturas -- L07                                 # miniaturas frente y 3/4 (todas si no se pasa código)
 ```
