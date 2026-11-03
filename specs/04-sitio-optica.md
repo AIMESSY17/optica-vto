@@ -3,8 +3,10 @@
 Una sola página larga (`index.html`) + ficha por lente como vista dentro de la misma página (`#lente/L03`, sin recargar). Todo el contenido editable sale de `public/data/sitio.json` y `public/models/catalogo.json`.
 
 ## Secciones (en orden)
+> Esta es la versión liviana (F3). En el nivel 2 (F3b) el orden y varias secciones cambian: ver `07-nivel-2.md` ("Orden de secciones").
+
 1. **Header mínimo:** logo FOCO · "Catálogo" · "Turnos".
-2. **Hero "Ver claro.":** título grande + el lente grande debajo con una cota roja fina (142 MM). El lente es una **imagen** (miniatura de frente del lente elegido en `sitio.json`) que gira apenas con el scroll; no se carga 3D en el hero (decisión aprobada: más liviano y el 3D queda para el probador). CTA principal "Probátelos en tu cara" + "Ver catálogo →".
+2. **Hero "Ver claro.":** título grande + el lente grande debajo con una cota roja fina (142 MM). El lente es una **imagen** (miniatura de frente del lente elegido en `sitio.json`) que gira apenas con el scroll; no se carga 3D en el hero (decisión aprobada: más liviano y el 3D queda para el probador). **Nivel 2 (F3b, spec 07 §3):** en celular sigue siendo imagen (con giroscopio); en PC el lente pasa a 3D y sigue el mouse, cargado después del primer render. CTA principal "Probátelos en tu cara" + "Ver catálogo →".
 3. (sin tira técnica: se sacó para alivianar)
 4. **Catálogo:** chips Todos / Receta / Sol / Forma ▾. Tarjetas livianas (ver 05): miniatura, código rojo chico, nombre y subtítulo ("Receta · 3 colores"). Toda la tarjeta abre la ficha; "Probar" está en la ficha y en el probador.
 5. **El probador explicado:** 3 pasos cortos + "tu cámara no se graba ni se sube" + botón.

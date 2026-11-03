@@ -1,5 +1,7 @@
 # 05 — Diseño (versión liviana, aprobada)
 
+> El nivel 2 visual (F3b) está en `07-nivel-2.md` y manda sobre esta spec donde la contradiga. Las excepciones están al final, en "Excepciones del nivel 2".
+
 ## Concepto: "VER CLARO"
 Editorial de moda **liviana y aireada**, casi blanca. La tecnología del probador (puntos, cotas, medidas) aparece **como detalle fino en rojo**, nunca como carga visual.
 Sensación buscada: limpia, tranquila, tipo app de iPhone + revista minimalista. **Nada pesado ni cargado.**
@@ -27,6 +29,7 @@ Referencias de ambiente en `docs/referencias/` (lentes gigantes, tabla vista a t
 - **Títulos:** `Archivo` peso 800, `font-stretch: 115–120%`, tracking `-0.04em`. Hero 76 px, secciones 32 px. Mayúscula inicial, no todo en mayúsculas.
 - **Texto y botones:** `Archivo` 400–600, 15–17 px.
 - **Técnica:** `IBM Plex Mono` 9–11 px, solo para códigos (L03), medidas (140 MM) y rótulos chicos (PROBADOR VIRTUAL). Usar poco.
+- **Acento (F3b):** `Instrument Serif` italic, solo en la palabra clave de cada título ("Ver *claro*."). Ver 07 §1.
 
 ## Componentes
 - **Botón principal:** fondo `--tinta`, texto `--fondo`, 52 px de alto, `border-radius: 26px` (píldora), texto normal (no mayúsculas).
@@ -51,3 +54,12 @@ Sutil: cotas que se dibujan, fade + subida corta de títulos, lente del hero que
 
 ## Prohibido
 Gradientes, glassmorphism pesado, sombras grandes, bordó, fondos negros por sección, mayúsculas en todo, demasiadas etiquetas técnicas, emojis en la UI, fotos de stock.
+
+## Excepciones del nivel 2 (F3b, aprobadas)
+Solo estas, y solo como las describe `07-nivel-2.md`:
+- **Momento de color** (07 §10): una sola sección a pantalla completa en el color del lente destacado (carey `#7A3E12`→`#C98A3B`, con degradé). Es el único bloque de color fuerte y el único lugar donde se permite el marrón.
+- **Luz de estudio** (07 §5): degradé radial suave con viñeta detrás de cada lente, sombra de contacto chica y reflejo tenue. No hay otros gradientes.
+- **Fotos de stock** (07 §7): solo en el lookbook, retratos de Unsplash/Pexels sin lentes, con nuestros lentes puestos y crédito en `public/lookbook/CREDITOS.md`.
+- **Tipografía**: `Instrument Serif` italic como acento; títulos de hasta ~220 px en PC (07 §1).
+- **Rótulos técnicos y detalles de imprenta** (07 §2–3): cuadrícula, marcas de corte y numeración, siempre en línea de 1 px y tenues.
+- **3D en PC** en hero y ficha (ver `CLAUDE.md`).

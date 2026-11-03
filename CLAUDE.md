@@ -13,8 +13,9 @@ La demo se llama **FOCO** (óptica ficticia). Se usa para venderle la página a 
 ## Reglas fijas
 - **Mobile primero.** Se prueba siempre en celular real (Chrome Android + Safari iPhone).
 - **Fluidez antes que detalle.** Si un efecto baja los FPS o atrasa la carga, se recorta.
-- **Diseño liviano y aireado** (aprobado): fondo casi blanco, negro, grises, rojo SOLO en cotas/códigos. Nada pesado ni cargado, nada de bordó ni bloques negros. Ver `specs/05-diseno.md` y `docs/boceto/`.
+- **Diseño liviano y aireado** (aprobado): fondo casi blanco, negro, grises, rojo SOLO en cotas/códigos. Nada pesado ni cargado, nada de bordó ni bloques negros. Ver `specs/05-diseno.md` y `docs/boceto/`. El nivel 2 visual (F3b, `specs/07-nivel-2.md`) suma excepciones acotadas, listadas en la 05.
 - **Three.js y MediaPipe se cargan SOLO al abrir el probador** (import dinámico). La página inicial no los descarga.
+  - **Única excepción (F3b, spec 07):** en PC (`matchMedia('(min-width: 1024px) and (pointer: fine)')`) Three.js puede cargarse en el hero y la ficha, con import dinámico **después del primer render** (`requestIdleCallback`); antes se ve la imagen. En celular, nunca. MediaPipe sigue solo en el probador.
 - **Privacidad:** la cámara nunca sube nada. Todo se procesa en el celular. Decirlo en la UI.
 - **Licencias:** modelos solo CC0/CC-BY con crédito en `CREDITOS.md` y en el pie. Nada de modelos de videojuegos ni logos/nombres de marcas reales.
 - Todo gratis: Vite + JS vanilla, deploy en Vercel (repo GitHub AIMESSY17).

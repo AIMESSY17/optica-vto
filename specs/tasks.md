@@ -2,7 +2,7 @@
 
 Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No pasar a la siguiente sin cumplir el "listo" de la actual.
 
-**Fase actual: F3** (de F1 falta probar en celu T1.7–T1.9 y el Android)
+**Fase actual: F4** (de F1 falta probar en celu T1.7–T1.9 y el Android). **Después: F3b**, con la rama `fase/F3b-nivel-2` saliendo de F4 terminada, para armar el nivel 2 sobre los datos de Supabase.
 
 ---
 
@@ -61,6 +61,22 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 - [ ] T3.9 SEO local + Open Graph (R-29).
 - [ ] T3.10 Auditoría Lighthouse móvil: R-40, R-42.
 **Listo F3:** checklist de entrega (abajo) completo.
+
+## F3b — Nivel 2 visual (rama `fase/F3b-nivel-2`) — ver specs/07-nivel-2.md
+Una tarea por vez, probar en celu Y en PC después de cada una.
+- [ ] T3b.1 Tipografía editorial (Instrument Serif itálica de acento) + cuadrícula, marcas de corte y numeración de secciones.
+- [ ] T3b.2 Luz de estudio: fondos con viñeta, sombra de contacto y reflejo; regenerar miniaturas con luz de estudio.
+- [ ] T3b.3 Sprites 360° (24 cuadros por lente) + componente de giro (hover en PC, arrastrar en celu).
+- [ ] T3b.4 Catálogo pasarela: horizontal sticky en PC, un lente por pantalla en celu.
+- [ ] T3b.5 Hero nivel 2: título gigante, lente con luz de estudio, rótulos; giroscopio en celu.
+- [ ] T3b.6 3D en PC: hero (gira con el mouse) y ficha (girar/zoom), carga diferida solo en PC.
+- [ ] T3b.7 Ficha nivel 2: dibujo técnico SVG con cotas + QR "abrilo en tu celu" en PC.
+- [ ] T3b.8 Probador explicado estilo lanzamiento (sticky en PC, pasos en celu).
+- [ ] T3b.9 Momento de color a pantalla completa.
+- [ ] T3b.10 Lookbook: fotos Unsplash/Pexels sin lentes + nuestros lentes puestos con el modo selfie; créditos.
+- [ ] T3b.11 Micro-interacciones: entrada con foco, View Transitions, botones magnéticos, cursor propio, cotas animadas, scroll suave.
+- [ ] T3b.12 Auditoría: Lighthouse celu (≥ 95 rendimiento), PC, prefers-reduced-motion, FPS.
+**Listo F3b:** se ve como una marca de moda en celu y en PC, y el celu sigue cargando en < 2,5 s.
 
 ## F4 — Panel admin (rama `fase/F4-admin`)
 - [ ] T4.1 Supabase (plan gratis): tablas `lentes`, `variantes`, `sitio`; storage para GLB y miniaturas.
