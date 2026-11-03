@@ -1,10 +1,11 @@
 // Sitio de la óptica FOCO (F3, specs/04-sitio-optica.md). JS vanilla, liviano.
-// Los textos salen de public/data/sitio.json y los lentes de public/models/catalogo.json.
+// Textos y lentes: de Supabase, con respaldo en public/data/sitio.json y public/models/catalogo.json (datos.js).
 // El probador (three + MediaPipe) se descarga recién al tocar "Probátelos" (CLAUDE.md).
 import { registrarCacheProbador } from '../vto/cache.js';
+import { cargarDatos } from './datos.js';
 
 const base = import.meta.env.BASE_URL;
-const ruta = (r) => base + String(r).replace(/^\//, '');
+const ruta = (r) => (/^https?:\/\//.test(r) ? r : base + String(r).replace(/^\//, '')); // URL completa (storage) tal cual
 const $ = (sel, raiz = document) => raiz.querySelector(sel);
 const $$ = (sel, raiz = document) => [...raiz.querySelectorAll(sel)];
 const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -12,11 +13,8 @@ const MUESTRA_CATALOGO = 4; // tarjetas visibles antes de "Ver los modelos"
 
 registrarCacheProbador();
 
-const [sitio, catalogo] = await Promise.all([
-  fetch(ruta('data/sitio.json')).then((r) => r.json()),
-  fetch(ruta('models/catalogo.json')).then((r) => r.json()),
-]);
-const lentes = catalogo.lentes;
+const { sitio, lentes, origen } = await cargarDatos(ruta);
+document.documentElement.dataset.datos = origen; // para revisar de dónde salieron (supabase | local)
 const porCodigo = (c) => lentes.find((l) => l.codigo.toUpperCase() === String(c).toUpperCase());
 
 // ---------------------------------------------------------------------------------------------
@@ -319,7 +317,7 @@ async function abrirProbador(codigo = sitio.hero.lente, colorInicial) {
     // Casi siempre ya está descargado: se llama sin esperar nada, así no se pierde el toque (iOS).
     const { abrirProbador: abrir } = vtoModulo ?? (await cargarVto());
     vtoAbierto = abrir({
-      contenedor, catalogo, idInicial: codigo, colorInicial,
+      contenedor, catalogo: { lentes }, idInicial: codigo, colorInicial,
       debug: new URLSearchParams(location.search).get('debug') === '1',
       onCerrar: cerrarVista,
       onConsultar: (l, variante) => abrirWa(mensajeConsulta(l, variante)),

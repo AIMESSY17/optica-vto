@@ -1,7 +1,7 @@
 // Interfaz del probador (spec 05 "Probador (UI)", boceto docs/boceto/probador.html).
 // Solo DOM: se arma al instante, mientras three y MediaPipe todavía se descargan.
 const base = import.meta.env.BASE_URL;
-export const rutaPublica = (ruta) => base + String(ruta).replace(/^\//, '');
+export const rutaPublica = (ruta) => (/^https?:\/\//.test(ruta) ? ruta : base + String(ruta).replace(/^\//, '')); // URL completa (storage) tal cual
 
 // Loader (T1.9): dos aros de lente. Se dibujan dos copias que se juntan, como cuando algo entra en foco.
 const AROS = '<svg viewBox="0 0 120 48" width="120" height="48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="30" cy="24" r="18"/><circle cx="90" cy="24" r="18"/><path d="M48 22 Q60 15 72 22"/></svg>';
