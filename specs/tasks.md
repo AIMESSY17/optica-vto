@@ -2,7 +2,7 @@
 
 Orden pensado de **lo más riesgoso a lo más fácil**. Una fase = una rama. No pasar a la siguiente sin cumplir el "listo" de la actual.
 
-**Fase actual: F4** (de F1 falta probar en celu T1.7–T1.9 y el Android). **Después: F3b**, con la rama `fase/F3b-nivel-2` saliendo de F4 terminada, para armar el nivel 2 sobre los datos de Supabase.
+**Fase actual: F3b** (cambio de prioridad: el diseño va primero). La rama `fase/F3b-nivel-2` sale de `fase/F4-admin` con T4.3 commiteada sin probar. **F4 en pausa.** De F1 falta probar en celu T1.7–T1.9 y el Android.
 
 ---
 
@@ -64,6 +64,7 @@ Objetivo: saber si el probador anda fluido en un celu real. Página pelada, sin 
 
 ## F3b — Nivel 2 visual (rama `fase/F3b-nivel-2`) — ver specs/07-nivel-2.md
 Una tarea por vez, probar en celu Y en PC después de cada una.
+- [ ] T3b.0 Layout de PC (≥ 1024 px): grilla de 12 columnas, máx. 1440 px, márgenes 64–80 px, ninguna sección en columna angosta. Hero a pantalla completa: "Ver *claro*." gigante a la izquierda, lente de 7–8 columnas pisando el título, cota al ancho del armazón, rótulos en las esquinas, texto + 2 botones abajo a la izquierda, flecha de scroll.
 - [ ] T3b.1 Tipografía editorial (Instrument Serif itálica de acento) + cuadrícula, marcas de corte y numeración de secciones.
 - [ ] T3b.2 Luz de estudio: fondos con viñeta, sombra de contacto y reflejo; regenerar miniaturas con luz de estudio.
 - [ ] T3b.3 Sprites 360° (24 cuadros por lente) + componente de giro (hover en PC, arrastrar en celu).

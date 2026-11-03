@@ -5,6 +5,7 @@
 //   node scripts/miniaturas.mjs                  → todos los lentes de public/models/catalogo.json
 //   node scripts/miniaturas.mjs L07 L08          → solo esos (código o id)
 //   node scripts/miniaturas.mjs --salida carpeta → guarda en otra carpeta (para comparar antes de pisar)
+//   node scripts/miniaturas.mjs L01 --grande     → solo el frente a 1600 px (Lxx_frente_1600.webp), para el hero en PC
 //
 // Necesita Playwright con Chromium (`npx playwright install chromium`, una sola vez) o Google Chrome instalado.
 import { createServer } from 'vite';
@@ -18,8 +19,12 @@ const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const iSalida = args.indexOf('--salida');
 const salida = iSalida >= 0 ? path.resolve(args[iSalida + 1]) : path.join(raiz, 'public/models/thumbs');
-const pedidos = args.filter((a, i) => !a.startsWith('--') && i !== iSalida + 1);
+const pedidos = args.filter((a, i) => !a.startsWith('--') && (iSalida < 0 || i !== iSalida + 1));
+const grande = args.includes('--grande');
 const ANCHO = { frente: 640, '34': 568 }; // ancho final en px (como las miniaturas originales)
+// --grande: render al doble y margen proporcional (10 px de 1600 ≈ 4 px de 648), así la cota del hero calza igual.
+const VISTAS_A_GENERAR = grande ? ['frente'] : ['frente', '34'];
+const MARGEN = grande ? 10 : 4;
 
 const catalogo = JSON.parse(readFileSync(path.join(raiz, 'public/models/catalogo.json'), 'utf8'));
 const lentes = catalogo.lentes.filter((l) => !pedidos.length || pedidos.includes(l.codigo) || pedidos.includes(l.id));
@@ -39,14 +44,15 @@ try {
   await pagina.waitForFunction(() => window.listo, null, { timeout: 60000 });
 
   for (const lente of lentes) {
-    for (const vista of ['frente', '34']) {
-      const png = await pagina.evaluate((p) => window.renderizar(p), { url: lente.archivo, info: lente, vista });
-      const archivo = path.join(salida, `${lente.id}_${vista}.webp`);
+    for (const vista of VISTAS_A_GENERAR) {
+      const tam = grande ? { ancho: 3200, alto: 1800 } : {};
+      const png = await pagina.evaluate((p) => window.renderizar(p), { url: lente.archivo, info: lente, vista, ...tam });
+      const archivo = path.join(salida, `${lente.id}_${vista}${grande ? '_1600' : ''}.webp`);
       // Recortar el fondo transparente, dejar un margen chico y llevar al ancho final.
       const recortada = await sharp(Buffer.from(png.split(',')[1], 'base64')).trim({ threshold: 1 }).toBuffer();
       await sharp(recortada)
-        .extend({ top: 4, bottom: 4, left: 4, right: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .resize({ width: ANCHO[vista] })
+        .extend({ top: MARGEN, bottom: MARGEN, left: MARGEN, right: MARGEN, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .resize({ width: grande ? 1600 : ANCHO[vista] })
         .webp({ quality: 85, alphaQuality: 90 })
         .toFile(archivo);
       console.log(`${lente.codigo} ${vista} → ${path.relative(raiz, archivo)}`);

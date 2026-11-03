@@ -10,9 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Fuentes sin bloquear el primer pintado (R-40): se aplican cuando llegan (display=swap) -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&display=swap" /></noscript>
-    <link rel="preload" as="image" href="/models/thumbs/optico-acetato-negro_frente.webp" fetchpriority="high" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" /></noscript>
+    <!-- Lente del hero: el celu baja la miniatura chica; la PC, la de 1600 px (una sola de las dos) -->
+    <link rel="preload" as="image" href="/models/thumbs/optico-acetato-negro_frente.webp" media="(max-width: 1023px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/models/thumbs/optico-acetato-negro_frente_1600.webp" media="(min-width: 1024px)" fetchpriority="high" />
     <link rel="stylesheet" href="/src/sitio/estilos.css" />
   </head>
   <body>
@@ -28,22 +30,37 @@
 
     <main id="inicio">
       <!-- 2. Hero -->
-      <section class="hero" aria-labelledby="titulo-hero">
-        <p class="rotulo" data-texto="rotulo">ÓPTICA · COMODORO RIVADAVIA</p>
-        <h1 id="titulo-hero" class="aparecer">Ver<br />claro.</h1>
-        <div class="hero-lente">
-          <img src="/models/thumbs/optico-acetato-negro_frente.webp" width="640" height="261" alt="Lente de acetato negro, de frente" fetchpriority="high" decoding="async" data-hero-img />
+      <section class="hero tecnica marcas" aria-labelledby="titulo-hero">
+        <!-- Rótulos técnicos en las esquinas (spec 07 §3) -->
+        <p class="rotulo esquina esquina-ai" data-hero-fig aria-hidden="true">FIG. 01 · L01 ACETATO NEGRO</p>
+        <p class="rotulo esquina esquina-ad" aria-hidden="true">FW26</p>
+        <p class="rotulo esquina esquina-bd" data-hero-indice aria-hidden="true">01/08</p>
+        <p class="rotulo hero-lugar" data-texto="rotulo">ÓPTICA · COMODORO RIVADAVIA</p>
+        <h1 id="titulo-hero" class="aparecer">Ver<br /><em>claro.</em></h1>
+        <figure class="hero-lente">
+          <picture>
+            <source media="(min-width: 1024px)" srcset="/models/thumbs/optico-acetato-negro_frente_1600.webp" width="1620" height="615" data-hero-grande />
+            <img src="/models/thumbs/optico-acetato-negro_frente.webp" width="648" height="246" alt="Lente de acetato negro, de frente" fetchpriority="high" decoding="async" data-hero-img />
+          </picture>
+          <!-- La cota mide el armazón exacto: las miniaturas tienen 0,62 % de margen a cada lado -->
           <div class="cota" aria-hidden="true"><span data-hero-medida>142 MM</span></div>
+        </figure>
+        <div class="hero-pie">
+          <p class="hero-texto" data-texto="hero">Probate los lentes en tu cara desde el celular, en 3D. Sin descargar nada.</p>
+          <div class="acciones">
+            <button type="button" class="boton boton-prin" data-probar>Probátelos en tu cara</button>
+            <a class="boton boton-texto" href="#catalogo">Ver catálogo →</a>
+          </div>
         </div>
-        <p class="hero-texto" data-texto="hero">Probate los lentes en tu cara desde el celular, en 3D. Sin descargar nada.</p>
-        <div class="acciones">
-          <button type="button" class="boton boton-prin" data-probar>Probátelos en tu cara</button>
-          <a class="boton boton-texto" href="#catalogo">Ver catálogo →</a>
-        </div>
+        <a class="hero-flecha" href="#catalogo" aria-label="Bajar al catálogo">
+          <span class="rotulo">BAJAR</span>
+          <svg aria-hidden="true" viewBox="0 0 12 40" width="12" height="40" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 0v39M1 34l5 5 5-5" /></svg>
+        </a>
       </section>
 
       <!-- 4. Catálogo -->
-      <section id="catalogo" class="seccion" aria-labelledby="titulo-catalogo">
+      <section id="catalogo" class="seccion seccion-catalogo marcas" aria-labelledby="titulo-catalogo">
+        <p class="num" aria-hidden="true">CATÁLOGO</p>
         <div class="titulo-fila">
           <h2 id="titulo-catalogo">Catálogo</h2>
           <span class="rotulo" data-cantidad></span>
@@ -61,9 +78,9 @@
       </section>
 
       <!-- 5. El probador explicado -->
-      <section class="seccion" aria-labelledby="titulo-probador">
-        <p class="rotulo rotulo-rojo">PROBADOR VIRTUAL</p>
-        <h2 id="titulo-probador">Tu cara es<br />el probador.</h2>
+      <section class="seccion seccion-probador tecnica marcas" aria-labelledby="titulo-probador">
+        <p class="num" aria-hidden="true">PROBADOR VIRTUAL</p>
+        <h2 id="titulo-probador">Tu cara es<br /><em>el probador.</em></h2>
         <div class="cara">
           <img src="/img/cara-referencia.webp" width="640" height="439" alt="Cara de referencia con lentes cat-eye puestos y las medidas marcadas" loading="lazy" decoding="async" />
           <svg aria-hidden="true" viewBox="0 0 350 240" preserveAspectRatio="xMidYMid slice">
@@ -81,38 +98,41 @@
       </section>
 
       <!-- 6. Servicios -->
-      <section id="servicios" class="seccion" aria-labelledby="titulo-servicios">
+      <section id="servicios" class="seccion seccion-servicios" aria-labelledby="titulo-servicios">
+        <p class="num" aria-hidden="true">SERVICIOS</p>
         <h2 id="titulo-servicios">Servicios</h2>
         <div class="lista" data-servicios></div>
       </section>
 
       <!-- 7. Lupa "ver claro" -->
-      <section id="turno" class="seccion" aria-labelledby="titulo-lupa">
+      <section id="turno" class="seccion seccion-lupa" aria-labelledby="titulo-lupa">
+        <p class="num" aria-hidden="true">CONTROL DE LA VISTA</p>
         <div class="lupa" data-lupa>
           <div class="tabla tabla-borrosa" aria-hidden="true"><span>E</span><span>F P</span><span>T O Z</span><span>L P E D</span><span>P E C F D</span></div>
           <div class="tabla tabla-nitida" aria-hidden="true"><span>E</span><span>F P</span><span>T O Z</span><span>L P E D</span><span>P E C F D</span></div>
           <div class="lupa-aro" aria-hidden="true"></div>
           <p class="visualmente-oculto">Tabla optométrica: las letras se ven borrosas salvo donde pasás el dedo, como una lupa.</p>
         </div>
-        <p class="frase" id="titulo-lupa">Si leés esto borroso,<br />te toca control.</p>
+        <p class="frase" id="titulo-lupa">Si leés esto <em>borroso</em>,<br />te toca control.</p>
         <button type="button" class="boton boton-prin" data-turno="Control de la vista">Sacar turno</button>
       </section>
 
       <!-- 8. Obras sociales -->
-      <section class="seccion seccion-chica" aria-labelledby="titulo-obras">
-        <h2 id="titulo-obras" class="subtitulo">Obras sociales</h2>
+      <section class="seccion seccion-chica seccion-obras" aria-labelledby="titulo-obras">
+        <h2 id="titulo-obras" class="num">OBRAS SOCIALES</h2>
         <ul class="chips chips-fijos" data-obras></ul>
       </section>
 
       <!-- 9. Preguntas -->
-      <section id="preguntas" class="seccion" aria-labelledby="titulo-preguntas">
+      <section id="preguntas" class="seccion seccion-preguntas" aria-labelledby="titulo-preguntas">
+        <p class="num" aria-hidden="true">PREGUNTAS</p>
         <h2 id="titulo-preguntas">Preguntas</h2>
         <div class="faq" data-faq></div>
       </section>
 
       <!-- 10. Ubicación -->
-      <section id="ubicacion" class="seccion" aria-labelledby="titulo-ubicacion">
-        <p class="rotulo" id="titulo-ubicacion">UBICACIÓN</p>
+      <section id="ubicacion" class="seccion seccion-ubicacion" aria-labelledby="titulo-ubicacion">
+        <h2 class="num" id="titulo-ubicacion">UBICACIÓN</h2>
         <p class="direccion" data-direccion></p>
         <p class="horarios" data-horarios></p>
         <a class="boton boton-borde" href="https://www.google.com/maps" data-maps target="_blank" rel="noopener">Cómo llegar ↗</a>

@@ -40,7 +40,18 @@ const textos = () => {
     const src = ruta(heroLente.miniaturas.frente);
     if (!img.src.endsWith(heroLente.miniaturas.frente)) img.src = src;
     img.alt = `Lente ${heroLente.nombre.toLowerCase()}, de frente`;
+    // PC: versión de 1600 px (npm run miniaturas -- Lxx --grande). Si no existe, queda la chica.
+    const grande = $('[data-hero-grande]');
+    const srcGrande = src.replace(/_frente\.webp$/, '_frente_1600.webp');
+    if (srcGrande === src) grande.remove();
+    else if (!grande.srcset.endsWith(srcGrande.split('/').pop())) {
+      grande.srcset = srcGrande;
+      img.addEventListener('error', () => { grande.remove(); img.src = src; }, { once: true });
+    }
     $('[data-hero-medida]').textContent = `${heroLente.ancho_total_mm} MM`;
+    $('[data-hero-fig]').textContent = `FIG. 01 · ${heroLente.codigo} ${heroLente.nombre}`.toUpperCase();
+    const dos = (n) => String(n).padStart(2, '0');
+    $('[data-hero-indice]').textContent = `${dos(lentes.indexOf(heroLente) + 1)}/${dos(lentes.length)}`;
   }
   $('[data-direccion]').textContent = sitio.direccion;
   $('[data-horarios]').innerHTML = '';
@@ -362,6 +373,13 @@ function armarLupa() {
 // ---------------------------------------------------------------------------------------------
 // Movimiento sutil (spec 05): el lente del hero gira apenas con el scroll; las secciones aparecen al llegar
 function movimiento() {
+  // PC: el botón de WhatsApp se esconde mientras se ve el hero (ahí ya están los botones)
+  if ('IntersectionObserver' in window) {
+    const flotante = $('.flotante');
+    new IntersectionObserver(([e]) => {
+      flotante.classList.toggle('en-hero', e.isIntersecting && matchMedia('(min-width: 1024px)').matches);
+    }, { threshold: 0.35 }).observe($('.hero'));
+  }
   if (reducido) return;
   const img = $('[data-hero-img]');
   let pendiente = false;
