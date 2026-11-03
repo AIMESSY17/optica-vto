@@ -4,7 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { AJUSTE_PUENTE, CAMARA, ESCALA_LENTE, ESCALA_OCLUSOR, PUENTE_BASE, RUTAS } from './constantes.js';
+import { AJUSTE_PUENTE, CAMARA, ESCALA_LENTE, OCLUSOR, PATILLAS, PUENTE_BASE, RUTAS } from './constantes.js';
+import { abrirPatillas, prepararPatillas } from './patillas.js';
 
 export function crearEscena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -37,6 +38,16 @@ export function crearEscena(canvas) {
     anclaLente.position.set(PUENTE_BASE.x + ajuste.x, PUENTE_BASE.y + ajuste.y, PUENTE_BASE.z + ajuste.z);
   aplicarAjuste();
 
+  // Forma del oclusor y apertura de patillas (T1.0). Se ajustan con los sliders de debug.
+  const forma = { oclusorAncho: OCLUSOR.escala.x, oclusorZ: OCLUSOR.corrimientoZ, aperturaPatillas: PATILLAS.aperturaGrados,
+    separacionPatillas: PATILLAS.separacionMm };
+  const aplicarOclusor = () => {
+    if (!oclusor) return;
+    oclusor.scale.set(forma.oclusorAncho, OCLUSOR.escala.y, OCLUSOR.escala.z);
+    oclusor.position.set(0, 0, forma.oclusorZ);
+  };
+  const aplicarPatillas = () => { if (lente) abrirPatillas(lente, forma.aperturaPatillas, forma.separacionPatillas); };
+
   const matOculto = new THREE.MeshBasicMaterial({ colorWrite: false, side: THREE.DoubleSide });
   const matVisible = new THREE.MeshBasicMaterial({ color: 0xe0301e, wireframe: true, transparent: true, opacity: 0.6 });
   let oclusor = null;
@@ -48,10 +59,13 @@ export function crearEscena(canvas) {
     cabeza,
     ajuste,
     aplicarAjuste,
+    forma,
+    aplicarOclusor,
+    aplicarPatillas,
 
     async cargarOclusor() {
       oclusor = await new OBJLoader().loadAsync(RUTAS.oclusor);
-      oclusor.scale.set(ESCALA_OCLUSOR.x, ESCALA_OCLUSOR.y, ESCALA_OCLUSOR.z);
+      aplicarOclusor();
       oclusor.traverse((o) => {
         if (o.isMesh) { o.material = matOculto; o.renderOrder = -1; }
       });
@@ -63,6 +77,8 @@ export function crearEscena(canvas) {
       const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
       const gltf = await loader.loadAsync(url);
       const nuevo = gltf.scene;
+      prepararPatillas(nuevo);
+      abrirPatillas(nuevo, forma.aperturaPatillas, forma.separacionPatillas);
       nuevo.scale.setScalar(ESCALA_LENTE);
       nuevo.traverse((o) => {
         if (!o.isMesh) return;

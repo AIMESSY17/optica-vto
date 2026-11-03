@@ -31,9 +31,10 @@ MediaPipe calcula la matriz para una cámara de perspectiva **vertical FOV 63°,
 
 ## 4. Grupo cabeza
 - `head = new THREE.Group(); head.matrixAutoUpdate = false;` y por frame `head.matrix.fromArray(result.facialTransformationMatrixes[0].data)` (column-major).
-- **Oclusor:** `canonical_face_model.obj` (ya está en cm, mismo espacio que la matriz) con `material.colorWrite = false`, `depthWrite = true`, `renderOrder = -1`. Opcional: agrandarlo 3–5 % en X/Z para que tape mejor las patillas.
+- **Oclusor:** `canonical_face_model.obj` (ya está en cm, mismo espacio que la matriz) con `material.colorWrite = false`, `depthWrite = true`, `renderOrder = -1`. Ancho 1.0: achicarlo deja ver la cara interna de las patillas a través del cristal (T1.0).
+- **Patillas:** al cargar el lente se giran 7° hacia afuera desde la bisagra, con separación extra opcional en X (`src/vto/patillas.js`, mueve los vértices detrás de la bisagra; sirve para cualquier armado del GLB). Así de perfil la patilla cercana queda por fuera de la cara invisible.
 - **Lente:** el GLB está en metros con origen en el puente → `glasses.scale.setScalar(100)` y `glasses.position.set(0, 2.87, 5.84)`.
-  - Punto de partida: landmark 168 de la cara canónica = `(0, 3.271, 5.236)` cm + offset fino `(0, -0.4, +0.6)` cm.
+  - Punto de partida: landmark 168 de la cara canónica = `(0, 3.271, 5.236)` cm + offset fino `(0, -0.8, +0.6)` cm (afinado en celu).
   - Dejar el offset en una constante `AJUSTE_PUENTE` y un modo debug (`?debug=1`) con sliders para afinarlo.
 - Si no hay cara en el frame: ocultar el lente con fade de 150 ms (no dejarlo congelado).
 
@@ -42,7 +43,7 @@ MediaPipe calcula la matriz para una cámara de perspectiva **vertical FOV 63°,
 - Extra (F1, opcional): **iris** para tamaño real. El iris humano mide ~11,7 mm. Con landmarks 468–477 (iris) se puede estimar mm/píxel y mostrar "DIP aproximada" (distancia entre pupilas). Siempre con el texto "orientativo, no reemplaza la medición en la óptica".
 
 ## 6. Suavizado (R-05)
-- **One Euro Filter** sobre posición (3) y rotación (cuaternión → slerp con alfa adaptativo). Parámetros iniciales: `minCutoff 1.0`, `beta 0.05`. Ajustar en debug.
+- **One Euro Filter** sobre posición (3) y rotación (cuaternión → slerp con alfa adaptativo). Parámetros iniciales: `minCutoff 1.0`, `beta 0.37` (afinado en celu). Ajustar en debug.
 
 ## 7. Render y materiales
 - `WebGLRenderer({ alpha: true, antialias: true })`, `setPixelRatio(Math.min(devicePixelRatio, 2))`, `toneMapping = ACESFilmic`, `outputColorSpace = SRGB`.
