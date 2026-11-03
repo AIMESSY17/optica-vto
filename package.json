@@ -10,7 +10,8 @@
     "postinstall": "node scripts/preparar-mediapipe.mjs",
     "normalizar": "node scripts/normalizar.mjs",
     "miniaturas": "node scripts/miniaturas.mjs",
-    "tapar-textura": "node scripts/tapar-textura.mjs"
+    "tapar-textura": "node scripts/tapar-textura.mjs",
+    "seed": "node scripts/generar-seed.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.0",

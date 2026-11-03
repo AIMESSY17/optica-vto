@@ -73,7 +73,7 @@ create table if not exists public.variantes (
   nombre      text not null,                                  -- ej. Carey
   muestra     text not null check (muestra ~ '^#[0-9A-Fa-f]{6}$'),  -- color del circulito
   original    boolean not null default false,                 -- true = el color tal cual viene en el modelo
-  claro       boolean not null default false,                 -- true = marco translúcido (acetato cristal)
+  claro       boolean not null default false,                 -- true = la muestra lleva borde gris fino (colores claros); no cambia el marco
   frame       jsonb,                                          -- cómo se pinta el marco: color, roughness, etc.
   unique (lente_id, nombre)
 );
